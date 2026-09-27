@@ -1,30 +1,14 @@
-import { useState } from "react";
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
-
-// M4'te gerçek API'ye bağlanacak: GET /api/matches/{id}/win-probability
-// Bkz. ../../docs/ARCHITECTURE.md
+import HomePage from "./pages/HomePage";
+import MatchPage from "./pages/MatchPage";
 
 function App() {
-  const [matchId, setMatchId] = useState("");
-
   return (
-    <main>
-      <h1>SoulCurve</h1>
-      <p>Deadlock maç kazanma olasılığı dashboard'u (Faz 1 MVP).</p>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          // TODO(M4): apps/api'deki /api/matches/{matchId}/win-probability çağrılacak
-        }}
-      >
-        <input
-          value={matchId}
-          onChange={(e) => setMatchId(e.target.value)}
-          placeholder="Maç ID"
-        />
-        <button type="submit">Ara</button>
-      </form>
-    </main>
+    <Routes>
+      <Route path="/" element={<HomePage />} />
+      <Route path="/match/:matchId" element={<MatchPage />} />
+    </Routes>
   );
 }
 
