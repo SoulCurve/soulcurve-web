@@ -1,154 +1,144 @@
-import { useEffect, useState } from "react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ReferenceLine,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
-import type { TooltipContentProps, TooltipValueType } from "recharts";
-import { fetchHeroItemStats, fetchHeroStats } from "../api";
-import type { HeroItemStatsResponse, HeroStat, HeroStatsResponse, ItemStat } from "../api";
-import { CHART, axisProps, percent } from "../chartTheme";
+import { useSearchParams } from "react-router-dom";
+import { fetchHeroItemStats, fetchHeroStats } from "@/api";
+import type { HeroStat, ItemStat } from "@/api";
+import { percent } from "@/chartTheme";
+import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { useAsync } from "@/lib/useAsync";
+import { cn } from "@/lib/utils";
 
-// Bars grow from the 50% line so small win-rate edges stay visible without truncating the axis.
-const withEdge = <T extends { win_rate: number }>(rows: T[]) =>
-  rows.map((row) => ({ ...row, edge: row.win_rate - 0.5 }));
-const edgeTick = (v: number) => percent(v + 0.5);
-const EDGE_DOMAIN: [number, number] = [-0.1, 0.1];
-import Panel from "../components/Panel";
-
-function RateTooltip({ active, payload }: TooltipContentProps<TooltipValueType, string | number>) {
-  const row = payload?.[0]?.payload as HeroStat | ItemStat | undefined;
-  if (!active || !row) return null;
+// Bars grow from 50% so a few points of edge stay visible without truncating the scale.
+function WinRateBar({ rate }: { rate: number }) {
+  const edge = Math.max(-0.1, Math.min(0.1, rate - 0.5));
+  const width = `${(Math.abs(edge) / 0.1) * 50}%`;
   return (
-    <div className="chart-tooltip">
-      <strong>{row.name}</strong>
-      <br />
-      Win rate <strong>{percent(row.win_rate)}</strong> · Pick rate {percent(row.pick_rate)}
+    <div className="flex items-center justify-end gap-3">
+      <span className={cn("w-12 text-right font-mono tabular-nums", edge >= 0 ? "text-foreground" : "text-muted-foreground")}>
+        {percent(rate)}
+      </span>
+      <div className="relative hidden h-1.5 w-28 rounded-full bg-white/[0.04] sm:block" aria-hidden="true">
+        <span className="absolute inset-y-[-3px] left-1/2 w-px bg-white/20" />
+        <span
+          className={cn("absolute inset-y-0 rounded-full", edge >= 0 ? "left-1/2 bg-soul" : "right-1/2 bg-white/25")}
+          style={{ width }}
+        />
+      </div>
     </div>
   );
 }
 
+function RateTable<T extends HeroStat | ItemStat>({
+  rows,
+  nameLabel,
+  getKey,
+  selectedKey,
+  onSelect,
+}: {
+  rows: T[];
+  nameLabel: string;
+  getKey: (row: T) => number;
+  selectedKey?: number | null;
+  onSelect?: (row: T) => void;
+}) {
+  const sorted = [...rows].sort((a, b) => b.win_rate - a.win_rate);
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          <TableHead className="w-10">#</TableHead>
+          <TableHead>{nameLabel}</TableHead>
+          <TableHead className="text-right">Win Rate</TableHead>
+          <TableHead className="w-24 text-right">Pick Rate</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {sorted.map((row, i) => {
+          const key = getKey(row);
+          const selected = selectedKey === key;
+          return (
+            <TableRow
+              key={key}
+              data-state={selected ? "selected" : undefined}
+              className={cn(onSelect && "cursor-pointer", selected && "bg-soul-dim hover:bg-soul-dim")}
+              onClick={onSelect ? () => onSelect(row) : undefined}
+            >
+              <TableCell className="font-mono text-muted-foreground tabular-nums">{i + 1}</TableCell>
+              <TableCell>
+                {onSelect ? (
+                  <button
+                    type="button"
+                    className="text-left hover:text-soul"
+                    aria-pressed={selected}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelect(row);
+                    }}
+                  >
+                    {row.name}
+                  </button>
+                ) : (
+                  row.name
+                )}
+              </TableCell>
+              <TableCell>
+                <WinRateBar rate={row.win_rate} />
+              </TableCell>
+              <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                {percent(row.pick_rate)}
+              </TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
+}
+
 function StatsPage() {
-  const [heroStats, setHeroStats] = useState<HeroStatsResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedHero, setSelectedHero] = useState<number | null>(null);
-  const [itemStats, setItemStats] = useState<HeroItemStatsResponse | null>(null);
-  const [itemError, setItemError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchHeroStats()
-      .then((res) => {
-        if (!cancelled) setHeroStats(res);
-      })
-      .catch((err: Error) => {
-        if (!cancelled) setError(err.message);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (selectedHero === null) return;
-    let cancelled = false;
-    fetchHeroItemStats(selectedHero)
-      .then((res) => {
-        if (cancelled) return;
-        setItemStats(res);
-        setItemError(null);
-      })
-      .catch((err: Error) => {
-        if (cancelled) return;
-        setItemStats(null);
-        setItemError(err.message);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedHero]);
+  const [params, setParams] = useSearchParams();
+  const heroParam = params.get("hero");
+  const heroes = useAsync(fetchHeroStats, "heroes");
+  const selectedHero = heroParam ? Number(heroParam) : (heroes.data ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate)[0]?.hero_id : null);
+  const items = useAsync(
+    () => (selectedHero ? fetchHeroItemStats(selectedHero) : Promise.resolve(null)),
+    `items-${selectedHero}`,
+  );
 
   return (
-    <main>
-      <div className="page-head">
-        <span className="eyebrow">Stats{heroStats && ` · patch ${heroStats.patch}`}</span>
-        <h1>Heroes &amp; items</h1>
-        <p>Hero win rates for the current patch. Pick a hero to see which items win games on it.</p>
-      </div>
+    <PageShell>
+      <PageHeader
+        eyebrow={heroes.data ? `Patch ${heroes.data.patch}` : "Stats"}
+        title="Heroes & Items"
+        description="Win and pick rates for the current patch. Select a hero to see which items win games on it."
+      />
 
-      {error && <p role="alert">{error}</p>}
-      {!heroStats && !error && <p className="state-text">Loading stats…</p>}
+      {heroes.error && <ErrorState message={`${heroes.error}. Refresh to try again.`} />}
+      {!heroes.data && !heroes.error && <LoadingState label="Loading stats…" />}
 
-      {heroStats && (
-        <Panel title="Hero win rate" subtitle="Bars grow from a 50% win rate · click one to see that hero's items">
-          <div className="chart-box">
-            <ResponsiveContainer>
-              <BarChart data={withEdge(heroStats.heroes)} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-                <CartesianGrid stroke={CHART.grid} vertical={false} />
-                <XAxis dataKey="name" {...axisProps} interval={0} axisLine={false} />
-                <YAxis domain={EDGE_DOMAIN} tickFormatter={edgeTick} {...axisProps} axisLine={false} />
-                <ReferenceLine y={0} stroke={CHART.reference} />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} content={RateTooltip} />
-                <Bar
-                  dataKey="edge"
-                  radius={4}
-                  maxBarSize={44}
-                  isAnimationActive={false}
-                  cursor="pointer"
-                  onClick={(data: { payload?: HeroStat }) => {
-                    if (data.payload) setSelectedHero(data.payload.hero_id);
-                  }}
-                >
-                  {heroStats.heroes.map((hero) => (
-                    <Cell
-                      key={hero.hero_id}
-                      fill={CHART.accent}
-                      fillOpacity={selectedHero === null || selectedHero === hero.hero_id ? 1 : 0.35}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Panel>
+      {heroes.data && (
+        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+          <Section title="Heroes" description="Sorted by win rate · bars show distance from 50%">
+            <RateTable
+              rows={heroes.data.heroes}
+              nameLabel="Hero"
+              getKey={(h) => h.hero_id}
+              selectedKey={selectedHero}
+              onSelect={(h) => setParams({ hero: String(h.hero_id) }, { replace: true })}
+            />
+          </Section>
+
+          <Section
+            title={items.data ? `${items.data.hero_name} · Items` : "Items"}
+            description="Win rate in games where the item was bought"
+            className="lg:self-start"
+          >
+            {items.error && <ErrorState message={items.error} />}
+            {!items.data && !items.error && <LoadingState label="Loading items…" />}
+            {items.data && <RateTable rows={items.data.items} nameLabel="Item" getKey={(it) => it.item_id} />}
+          </Section>
+        </div>
       )}
-
-      {selectedHero !== null && (
-        <Panel
-          title={itemStats ? `${itemStats.hero_name} · popular items` : "Popular items"}
-          subtitle="Win rate of games where the item was bought"
-        >
-          {itemError && <p role="alert">{itemError}</p>}
-          {!itemStats && !itemError && <p className="state-text">Loading items…</p>}
-          {itemStats && (
-            <div className="chart-box">
-              <ResponsiveContainer>
-                <BarChart data={withEdge(itemStats.items)} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
-                  <CartesianGrid stroke={CHART.grid} vertical={false} />
-                  <XAxis dataKey="name" {...axisProps} interval={0} axisLine={false} />
-                  <YAxis domain={EDGE_DOMAIN} tickFormatter={edgeTick} {...axisProps} axisLine={false} />
-                  <ReferenceLine y={0} stroke={CHART.reference} />
-                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} content={RateTooltip} />
-                  <Bar
-                    dataKey="edge"
-                    fill={CHART.accent}
-                    radius={4}
-                    maxBarSize={44}
-                    isAnimationActive={false}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          )}
-        </Panel>
-      )}
-    </main>
+    </PageShell>
   );
 }
 

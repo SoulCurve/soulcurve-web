@@ -1,13 +1,14 @@
 export const CHART = {
-  accent: "#1d9cb8",
-  grid: "#1f2430",
-  axis: "#6b7384",
-  reference: "#3a4254",
+  mark: "#22a85a",
+  grid: "rgba(255,255,255,0.06)",
+  axis: "#8b8b94",
+  reference: "rgba(255,255,255,0.18)",
+  surface: "#111113",
 } as const;
 
 export const axisProps = {
   stroke: CHART.grid,
-  tick: { fill: CHART.axis, fontSize: 12 },
+  tick: { fill: CHART.axis, fontSize: 11, fontFamily: "Geist Mono Variable, monospace" },
   tickLine: false,
 } as const;
 

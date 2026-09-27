@@ -1,8 +1,11 @@
+import { PageHeader, PageShell } from "@/components/site/primitives";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "What is SoulCurve?",
     answer:
-      "SoulCurve is a stats and coaching companion for Deadlock. It shows how a match's " +
+      "SoulCurve is a stats and coaching companion for Deadlock. It shows how a match’s " +
       "win probability shifted over time, general hero/item win-rate stats, and a " +
       "per-match mistake score that points out where you lost ground.",
   },
@@ -17,9 +20,9 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
     question: "How is the mistake score calculated?",
     answer:
       "Each notable moment in your match (a death, a missed rotation, a good trade, an " +
-      "objective) is valued by how much it changed your team's win probability. The " +
+      "objective) is valued by how much it changed your team’s win probability. The " +
       "score starts at 10 and is reduced by the moments that hurt your win probability " +
-      "— good plays are shown for context but don't add points back.",
+      "— good plays are shown for context but don’t add points back.",
   },
   {
     question: "Is SoulCurve free?",
@@ -32,22 +35,21 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
 
 function FaqPage() {
   return (
-    <main>
-      <div className="page-head">
-        <span className="eyebrow">FAQ</span>
-        <h1>Questions &amp; answers</h1>
-      </div>
-      <ul className="faq-list">
+    <PageShell>
+      <PageHeader eyebrow="FAQ" title="Questions & Answers" />
+      <Accordion className="max-w-3xl gap-2" defaultValue={[FAQ_ITEMS[0].question]}>
         {FAQ_ITEMS.map((item) => (
-          <li key={item.question}>
-            <details>
-              <summary>{item.question}</summary>
-              <p>{item.answer}</p>
-            </details>
-          </li>
+          <AccordionItem
+            key={item.question}
+            value={item.question}
+            className="rounded-lg border bg-card transition-colors not-last:border-b data-open:border-soul/30"
+          >
+            <AccordionTrigger className="px-5 py-4 text-[15px] hover:no-underline">{item.question}</AccordionTrigger>
+            <AccordionContent className="px-5 text-muted-foreground">{item.answer}</AccordionContent>
+          </AccordionItem>
         ))}
-      </ul>
-    </main>
+      </Accordion>
+    </PageShell>
   );
 }
 

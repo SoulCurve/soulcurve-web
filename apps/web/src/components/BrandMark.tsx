@@ -1,21 +1,14 @@
 function BrandMark() {
   return (
-    <svg className="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
-      <defs>
-        <linearGradient id="brand-gradient" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#4a7cf0" />
-          <stop offset="1" stopColor="#5cc8dc" />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill="#12151c" stroke="#2f3647" />
+    <svg className="size-6" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 1.5 22.5 12 12 22.5 1.5 12Z" fill="none" stroke="var(--soul)" strokeWidth="1.25" />
       <path
-        d="M6 22 C 11 22, 12 12, 16 14 S 22 8, 26 9"
+        d="M6 14.5c2.2 0 2.8-4.5 5-4.5s2.4 2.5 3.6 2.5S16.4 9 18 9"
         fill="none"
-        stroke="url(#brand-gradient)"
-        strokeWidth="2.6"
+        stroke="var(--foreground)"
+        strokeWidth="1.5"
         strokeLinecap="round"
       />
-      <circle cx="26" cy="9" r="2.4" fill="#5cc8dc" />
     </svg>
   );
 }
