@@ -21,7 +21,7 @@ export interface WinProbabilityResponse {
   winner: "amber" | "sapphire";
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
 export async function fetchWinProbability(matchId: string): Promise<WinProbabilityResponse> {
   const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}/win-probability`);
@@ -29,4 +29,21 @@ export async function fetchWinProbability(matchId: string): Promise<WinProbabili
     throw new Error(`Match not found (${response.status})`);
   }
   return response.json();
+}
+
+export interface Me {
+  steam_id: string | null;
+}
+
+export async function fetchMe(): Promise<Me> {
+  const response = await fetch(`${API_BASE_URL}/api/me`, { credentials: "include" });
+  return response.json();
+}
+
+export function steamLoginUrl(): string {
+  return `${API_BASE_URL}/auth/steam/login`;
+}
+
+export async function logout(): Promise<void> {
+  await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
 }

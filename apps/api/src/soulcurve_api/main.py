@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from soulcurve_api import __version__
+from soulcurve_api.auth import router as auth_router
 from soulcurve_api.models import MatchEvent, WinProbabilityPoint, WinProbabilityResponse
 
 app = FastAPI(title="SoulCurve API", version=__version__)
@@ -19,9 +20,12 @@ app = FastAPI(title="SoulCurve API", version=__version__)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[os.environ.get("WEB_ORIGIN", "http://localhost:5173")],
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
+    allow_credentials=True,
 )
+
+app.include_router(auth_router)
 
 
 @app.get("/health")

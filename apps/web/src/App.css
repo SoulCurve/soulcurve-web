@@ -5,6 +5,21 @@ main {
   text-align: left;
 }
 
+header {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px 20px 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.auth-status {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
 form {
   display: flex;
   gap: 8px;

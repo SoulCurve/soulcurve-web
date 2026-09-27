@@ -8,12 +8,14 @@ dependencies = [
     "fastapi",
     "uvicorn[standard]",
     "httpx",
+    "itsdangerous",
     # "soulcurve-model @ git+https://github.com/SoulCurve/soulcurve-model@v0.1.0",  # M4'te eklenecek
 ]
 
 [dependency-groups]
 dev = [
     "pytest",
+    "respx",
     "ruff",
 ]
 
