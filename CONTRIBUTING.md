@@ -4,7 +4,7 @@ SoulCurve iki kişilik bir ekip: **A (Gün)** uygulama, **B (Deniz)** veri/model
 Bu kurallar iki repoda da aynıdır.
 
 ## İş takibi
-- Her iş bir **issue**'dur ve bir **milestone**'a (M0-M5, bkz. [ROADMAP](https://github.com/Okkahai/soulcurve-model/blob/main/docs/ROADMAP.md)) bağlıdır.
+- Her iş bir **issue**'dur ve bir **milestone**'a (M0-M5, bkz. [ROADMAP](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md)) bağlıdır.
 - Etiketler: `data`, `model`, `api`, `web`, `infra`, `docs`, `bug`, `faz-2`.
 - `faz-2` etiketli işler Faz 1 kapısı geçilene kadar başlatılmaz.
 

@@ -3,9 +3,9 @@
 SoulCurve'ün uygulama reposu: bir Deadlock maçının zaman içindeki **kazanma olasılığı
 eğrisini** gösteren dashboard. Backend ve frontend bu tek repoda (monorepo) durur.
 
-Modeli ve özellik hesabını [`soulcurve-model`](https://github.com/Okkahai/soulcurve-model)
+Modeli ve özellik hesabını [`soulcurve-model`](https://github.com/SoulCurve/soulcurve-model)
 reposu üretir. Yol haritası orada tutulur:
-[ROADMAP.md](https://github.com/Okkahai/soulcurve-model/blob/main/docs/ROADMAP.md).
+[ROADMAP.md](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md).
 
 ## Yapı
 
