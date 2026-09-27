@@ -1,17 +1,10 @@
-// Hero and item art from deadlock-api's public asset service, keyed by lowercase name.
+// Hero and item art from deadlock-api's asset endpoints, keyed by lowercase name.
 // Field names are read defensively: anything missing falls back to a monogram.
 
-const ASSETS_URL = "https://assets.deadlock-api.com/v2";
+const ASSETS_URL = "https://api.deadlock-api.com/v1/assets";
 
 const HERO_IMAGE_KEYS = ["icon_image_small_webp", "icon_image_small", "icon_hero_card_webp", "icon_hero_card"];
-const ITEM_IMAGE_KEYS = [
-  "shop_image_small_webp",
-  "shop_image_small",
-  "image_webp",
-  "image",
-  "shop_image_webp",
-  "shop_image",
-];
+const ITEM_IMAGE_KEYS = ["shop_image_webp", "shop_image", "image_webp", "image"];
 
 export type AssetKind = "hero" | "item";
 export type AssetIndex = Record<AssetKind, Map<string, string>>;
