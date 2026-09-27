@@ -10,4 +10,4 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
-from soulcurve_api.main import app  # noqa: E402
+from soulcurve_api.main import app as app  # noqa: E402
