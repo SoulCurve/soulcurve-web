@@ -114,7 +114,7 @@ function SearchBar() {
             id="search-mode"
             value={mode}
             onChange={(e) => setMode(e.target.value as SearchMode)}
-            className="h-12 cursor-pointer appearance-none bg-transparent pr-7 pl-2.5 text-sm font-semibold tracking-wider text-soul uppercase outline-none"
+            className="h-12 w-24 cursor-pointer appearance-none bg-transparent pr-7 pl-2.5 text-sm font-semibold tracking-wider text-soul uppercase outline-none"
           >
             {Object.entries(SEARCH_MODES).map(([value, m]) => (
               <option key={value} value={value} className="bg-card text-foreground">
