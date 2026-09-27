@@ -1,8 +1,8 @@
-"""Steam ile giriş uçları.
+"""Steam sign-in endpoints.
 
-Akış: /auth/steam/login kullanıcıyı Steam'e yönlendirir → Steam kullanıcıyı
-/auth/steam/callback'e geri gönderir → imza doğrulanır → imzalı oturum
-çerezi set edilip frontend'e geri yönlendirilir.
+Flow: /auth/steam/login redirects the user to Steam → Steam sends the user
+back to /auth/steam/callback → the signature is verified → a signed session
+cookie is set and the user is redirected back to the frontend.
 """
 
 import os

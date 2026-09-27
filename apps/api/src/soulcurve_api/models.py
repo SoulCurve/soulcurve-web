@@ -1,6 +1,6 @@
-"""Response şemaları.
+"""Response schemas.
 
-docs/ARCHITECTURE.md'deki API sözleşmesiyle senkron tutulur.
+Kept in sync with the API contract in docs/ARCHITECTURE.md.
 """
 
 from typing import Literal

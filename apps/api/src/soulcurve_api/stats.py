@@ -1,7 +1,7 @@
 """General stats endpoints (hero/item win rates).
 
-M4'te gerçek deadlock-api verisiyle değiştirilecek; şimdilik sabit/mock veri
-döner, sözleşme gerçek olanla aynı kalacak şekilde tasarlandı.
+Will be replaced with real deadlock-api data in M4; for now it returns
+fixed/mock data, designed so the contract matches the real one.
 """
 
 from fastapi import APIRouter, HTTPException

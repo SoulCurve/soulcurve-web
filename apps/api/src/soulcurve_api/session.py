@@ -1,8 +1,8 @@
-"""İmzalı oturum çerezi.
+"""Signed session cookie.
 
-Faz 1'de kalıcı bir kullanıcı veritabanı yok (bkz. docs/DECISIONS.md — Neon
-kararı henüz uygulanmadı); oturum, steam_id'yi taşıyan imzalı+zaman damgalı
-bir çerezden ibaret. Sunucu tarafında hiçbir şey saklanmaz.
+There's no persistent user database yet in Phase 1 (see docs/DECISIONS.md —
+the Neon decision isn't implemented yet); the session is just a signed,
+timestamped cookie carrying steam_id. Nothing is stored server-side.
 """
 
 import os
@@ -10,7 +10,7 @@ import os
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 
 SESSION_COOKIE_NAME = "soulcurve_session"
-_MAX_AGE_SECONDS = 30 * 24 * 60 * 60  # 30 gün
+_MAX_AGE_SECONDS = 30 * 24 * 60 * 60  # 30 days
 
 _serializer = URLSafeTimedSerializer(os.environ.get("SESSION_SECRET", "dev-insecure-secret"))
 

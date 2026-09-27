@@ -30,7 +30,7 @@ def build_login_url(return_to: str, realm: str) -> str:
 
 
 async def verify_callback(params: dict[str, str]) -> str | None:
-    """Doğrulanmış SteamID64'ü döner, imza geçersizse None."""
+    """Returns the verified SteamID64, or None if the signature is invalid."""
     claimed_id = params.get("openid.claimed_id", "")
     match = _CLAIMED_ID_RE.match(claimed_id)
     if not match:

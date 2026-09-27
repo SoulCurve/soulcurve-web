@@ -1,9 +1,9 @@
 """FastAPI app entrypoint.
 
-M4'te eklenecek: gerçek deadlock-api verisi + model tahmini (bkz. docs/ARCHITECTURE.md).
-`/api/matches/{match_id}/win-probability` şimdilik sabit/mock veri döner; sözleşme
-(response şeması) gerçek olanla aynı, böylece frontend model bağlanmadan önce
-geliştirilip test edilebilir.
+To be added in M4: real deadlock-api data + model prediction (see docs/ARCHITECTURE.md).
+`/api/matches/{match_id}/win-probability` currently returns fixed/mock data; the
+contract (response schema) matches the real one, so the frontend can be developed
+and tested before the model is wired up.
 """
 
 import os
