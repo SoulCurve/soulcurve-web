@@ -1,4 +1,4 @@
-// docs/ARCHITECTURE.md'deki API sözleşmesiyle senkron tutulur.
+// Kept in sync with the API contract in docs/ARCHITECTURE.md.
 
 export interface WinProbabilityPoint {
   t_min: number;
@@ -26,7 +26,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000
 export async function fetchWinProbability(matchId: string): Promise<WinProbabilityResponse> {
   const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}/win-probability`);
   if (!response.ok) {
-    throw new Error(`Maç bulunamadı (${response.status})`);
+    throw new Error(`Match not found (${response.status})`);
   }
   return response.json();
 }

@@ -16,15 +16,15 @@ function HomePage() {
   return (
     <main>
       <h1>SoulCurve</h1>
-      <p>Deadlock maç kazanma olasılığı dashboard'u (Faz 1 MVP).</p>
+      <p>Deadlock match win-probability dashboard.</p>
       <form onSubmit={handleSubmit}>
         <input
           value={matchId}
           onChange={(e) => setMatchId(e.target.value)}
-          placeholder="Maç ID"
+          placeholder="Match ID"
           inputMode="numeric"
         />
-        <button type="submit">Ara</button>
+        <button type="submit">Search</button>
       </form>
     </main>
   );

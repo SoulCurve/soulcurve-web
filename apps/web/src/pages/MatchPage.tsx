@@ -37,17 +37,17 @@ function MatchPage() {
   return (
     <main>
       <p>
-        <Link to="/">&larr; Yeni arama</Link>
+        <Link to="/">&larr; New search</Link>
       </p>
-      <h1>Maç {matchId}</h1>
+      <h1>Match {matchId}</h1>
 
       {error && <p role="alert">{error}</p>}
-      {!data && !error && <p>Yükleniyor...</p>}
+      {!data && !error && <p>Loading...</p>}
 
       {data && (
         <>
           <p>
-            Model sürümü: <code>{data.model_version}</code> · Kazanan:{" "}
+            Model version: <code>{data.model_version}</code> · Winner:{" "}
             <strong>{data.winner}</strong>
           </p>
           <LineChart
@@ -57,7 +57,7 @@ function MatchPage() {
             margin={{ top: 16, right: 16, bottom: 16, left: 0 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="t_min" type="number" domain={["dataMin", "dataMax"]} unit="dk" />
+            <XAxis dataKey="t_min" type="number" domain={["dataMin", "dataMax"]} unit="min" />
             <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
             <Tooltip formatter={(value) => `${Math.round(Number(value) * 100)}%`} />
             <ReferenceLine y={0.5} strokeDasharray="4 4" />
@@ -71,11 +71,11 @@ function MatchPage() {
             />
           </LineChart>
 
-          <h2>Olaylar</h2>
+          <h2>Events</h2>
           <ul>
             {data.events.map((event) => (
               <li key={`${event.t_min}-${event.detail}`}>
-                {event.t_min} dk — {event.type}: {event.detail} ({event.team})
+                {event.t_min} min — {event.type}: {event.detail} ({event.team})
               </li>
             ))}
           </ul>
