@@ -4,6 +4,7 @@ import AuthStatus from "./components/AuthStatus";
 import AnalysisPage from "./pages/AnalysisPage";
 import HomePage from "./pages/HomePage";
 import MatchPage from "./pages/MatchPage";
+import NewsPage from "./pages/NewsPage";
 import StatsPage from "./pages/StatsPage";
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <nav>
           <Link to="/">Home</Link>
           <Link to="/stats">Stats</Link>
+          <Link to="/news">News</Link>
         </nav>
         <AuthStatus />
       </header>
@@ -21,6 +23,7 @@ function App() {
         <Route path="/match/:matchId" element={<MatchPage />} />
         <Route path="/match/:matchId/analysis" element={<AnalysisPage />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="/news" element={<NewsPage />} />
       </Routes>
     </>
   );

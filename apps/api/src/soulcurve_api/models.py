@@ -69,3 +69,15 @@ class MatchAnalysisResponse(BaseModel):
     score: float
     summary: str
     moments: list[PlayerMoment]
+
+
+class NewsItem(BaseModel):
+    id: int
+    title: str
+    date: str
+    tag: Literal["patch-notes", "news"]
+    summary: str
+
+
+class NewsResponse(BaseModel):
+    items: list[NewsItem]

@@ -113,3 +113,23 @@ export async function fetchMatchAnalysis(matchId: string): Promise<MatchAnalysis
   }
   return response.json();
 }
+
+export interface NewsItem {
+  id: number;
+  title: string;
+  date: string;
+  tag: "patch-notes" | "news";
+  summary: string;
+}
+
+export interface NewsResponse {
+  items: NewsItem[];
+}
+
+export async function fetchNews(): Promise<NewsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/news`);
+  if (!response.ok) {
+    throw new Error(`Failed to load news (${response.status})`);
+  }
+  return response.json();
+}

@@ -15,6 +15,7 @@ from soulcurve_api import __version__
 from soulcurve_api.analysis import router as analysis_router
 from soulcurve_api.auth import router as auth_router
 from soulcurve_api.models import MatchEvent, WinProbabilityPoint, WinProbabilityResponse
+from soulcurve_api.news import router as news_router
 from soulcurve_api.stats import router as stats_router
 
 app = FastAPI(title="SoulCurve API", version=__version__)
@@ -30,6 +31,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(stats_router)
 app.include_router(analysis_router)
+app.include_router(news_router)
 
 
 @app.get("/health")
