@@ -26,7 +26,7 @@ function WinRateBar({ rate }: { rate: number }) {
       >
         {percent(rate)}
       </span>
-      <div className="relative hidden h-1.5 w-28 rounded-full bg-white/[0.04] sm:block" aria-hidden="true">
+      <div className="relative hidden h-1.5 w-20 rounded-full bg-white/[0.04] sm:block" aria-hidden="true">
         <span className="absolute inset-y-[-3px] left-1/2 w-px bg-white/20" />
         <span
           className={cn("absolute inset-y-0 rounded-full", edge >= 0 ? "left-1/2 bg-soul" : "right-1/2 bg-white/25")}
@@ -107,7 +107,7 @@ function RateTable<T extends HeroStat | ItemStat>({
           <TableHead className="hidden w-10 sm:table-cell">#</TableHead>
           <SortHeader label={kind === "hero" ? "Hero" : "Item"} column="name" sort={sort} onSort={setSort} />
           <SortHeader label="Win Rate" short="Win" column="win_rate" sort={sort} onSort={setSort} className="text-right" />
-          <SortHeader label="Pick Rate" short="Pick" column="pick_rate" sort={sort} onSort={setSort} className="text-right sm:w-28" />
+          <SortHeader label="Pick Rate" short="Pick" column="pick_rate" sort={sort} onSort={setSort} className="text-right" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -191,7 +191,7 @@ function StatsPage() {
       {!heroes.data && !heroes.error && <LoadingState label="Loading stats…" variant="rows" />}
 
       {heroes.data && (
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <div className="grid gap-6 xl:grid-cols-2">
           <Section title="Heroes" description="Click a column to sort · bars show distance from 50%">
             <div className="relative mb-4 sm:w-64">
               <Search

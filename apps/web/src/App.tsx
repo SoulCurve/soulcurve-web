@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import Backdrop from "@/components/site/Backdrop";
 import SiteHeader from "@/components/site/SiteHeader";
 import AnalysisPage from "@/pages/AnalysisPage";
 import FaqPage from "@/pages/FaqPage";
@@ -18,15 +19,18 @@ function App() {
         Skip to Content
       </a>
       <SiteHeader />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/match/:matchId" element={<MatchPage />} />
-        <Route path="/match/:matchId/analysis" element={<AnalysisPage />} />
-        <Route path="/player/:steamId" element={<PlayerPage />} />
-        <Route path="/stats" element={<StatsPage />} />
-        <Route path="/news" element={<NewsPage />} />
-        <Route path="/faq" element={<FaqPage />} />
-      </Routes>
+      <div className="relative isolate flex flex-1 flex-col">
+        <Backdrop />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/match/:matchId" element={<MatchPage />} />
+          <Route path="/match/:matchId/analysis" element={<AnalysisPage />} />
+          <Route path="/player/:steamId" element={<PlayerPage />} />
+          <Route path="/stats" element={<StatsPage />} />
+          <Route path="/news" element={<NewsPage />} />
+          <Route path="/faq" element={<FaqPage />} />
+        </Routes>
+      </div>
       <footer className="border-t">
         <div className="mx-auto flex w-full max-w-6xl flex-wrap justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:px-6">
           <span translate="no">SoulCurve</span>

@@ -78,22 +78,6 @@ function SampleMatch() {
   );
 }
 
-const BACKDROPS = ["/bg/sanctum.webp", "/bg/alley.webp"];
-
-// Darkened game art behind the hero; the gradient hands off to the page grid below.
-function Backdrop() {
-  const [src] = useState(() => BACKDROPS[Math.floor(Math.random() * BACKDROPS.length)]);
-  return (
-    <div
-      className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] overflow-hidden sm:h-[38rem]"
-      aria-hidden="true"
-    >
-      <img src={src} alt="" className="size-full object-cover opacity-40 grayscale-[35%]" fetchPriority="high" />
-      <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
-    </div>
-  );
-}
-
 const SEARCH_MODES = {
   match: { label: "Match", placeholder: "Match ID…" },
   player: { label: "Player", placeholder: "Steam ID or profile URL…" },
@@ -182,88 +166,85 @@ function HomePage() {
   const topHeroes = heroes.data ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5) : [];
 
   return (
-    <div className="relative isolate flex flex-1 flex-col">
-      <Backdrop />
-      <PageShell>
-        <section className="flex flex-col items-center gap-5 py-10 text-center sm:py-20">
-          <h1 className="text-3xl font-semibold text-balance sm:text-4xl">
-            Every match has a <span className="text-soul">turning point</span>.
-          </h1>
-          <p className="max-w-lg text-pretty text-muted-foreground">
-            See how your team&rsquo;s win probability moved minute by minute, and which of your plays cost the most.
-          </p>
-          <div className="mt-3 flex w-full justify-center">
-            <SearchBar />
-          </div>
-        </section>
-
-        <div className="grid gap-6 lg:grid-cols-3">
-          <SampleMatch />
-          <Section
-            title="Top Heroes"
-            description={heroes.data ? `Highest win rate · patch ${heroes.data.patch}` : undefined}
-            action={
-              <Link to="/stats" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
-                All Stats
-              </Link>
-            }
-          >
-            <Table>
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-8">#</TableHead>
-                  <TableHead>Hero</TableHead>
-                  <TableHead className="text-right">Win Rate</TableHead>
-                  <TableHead className="text-right">Pick Rate</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topHeroes.map((hero, i) => (
-                  <TableRow key={hero.hero_id}>
-                    <TableCell className="font-mono text-muted-foreground tabular-nums">{i + 1}</TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-2.5">
-                        <GameIcon name={hero.name} kind="hero" />
-                        {hero.name}
-                      </span>
-                    </TableCell>
-                    <TableCell
-                      className={cn(
-                        "text-right font-mono tabular-nums",
-                        hero.win_rate > 0.5 ? "text-soul" : "text-muted-foreground",
-                      )}
-                    >
-                      {percent(hero.win_rate)}
-                    </TableCell>
-                    <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
-                      {percent(hero.pick_rate)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </Section>
-
-          <Section
-            title="Latest"
-            action={
-              <Link to="/news" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
-                All News
-              </Link>
-            }
-          >
-            <ul className="flex flex-col divide-y">
-              {news.data?.items.slice(0, 3).map((item) => (
-                <li key={item.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                  <span className="font-mono text-xs text-muted-foreground tabular-nums">{item.date}</span>
-                  <span className="text-sm">{item.title}</span>
-                </li>
-              ))}
-            </ul>
-          </Section>
+    <PageShell>
+      <section className="flex flex-col items-center gap-5 py-10 text-center sm:py-20">
+        <h1 className="text-3xl font-semibold text-balance sm:text-4xl">
+          Every match has a <span className="text-soul">turning point</span>.
+        </h1>
+        <p className="max-w-lg text-pretty text-muted-foreground">
+          See how your team&rsquo;s win probability moved minute by minute, and which of your plays cost the most.
+        </p>
+        <div className="mt-3 flex w-full justify-center">
+          <SearchBar />
         </div>
-      </PageShell>
-    </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <SampleMatch />
+        <Section
+          title="Top Heroes"
+          description={heroes.data ? `Highest win rate · patch ${heroes.data.patch}` : undefined}
+          action={
+            <Link to="/stats" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
+              All Stats
+            </Link>
+          }
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-8">#</TableHead>
+                <TableHead>Hero</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
+                <TableHead className="text-right">Pick Rate</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topHeroes.map((hero, i) => (
+                <TableRow key={hero.hero_id}>
+                  <TableCell className="font-mono text-muted-foreground tabular-nums">{i + 1}</TableCell>
+                  <TableCell>
+                    <span className="flex items-center gap-2.5">
+                      <GameIcon name={hero.name} kind="hero" />
+                      {hero.name}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right font-mono tabular-nums",
+                      hero.win_rate > 0.5 ? "text-soul" : "text-muted-foreground",
+                    )}
+                  >
+                    {percent(hero.win_rate)}
+                  </TableCell>
+                  <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
+                    {percent(hero.pick_rate)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Section>
+
+        <Section
+          title="Latest"
+          action={
+            <Link to="/news" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
+              All News
+            </Link>
+          }
+        >
+          <ul className="flex flex-col divide-y">
+            {news.data?.items.slice(0, 3).map((item) => (
+              <li key={item.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                <span className="font-mono text-xs text-muted-foreground tabular-nums">{item.date}</span>
+                <span className="text-sm">{item.title}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      </div>
+    </PageShell>
   );
 }
 
