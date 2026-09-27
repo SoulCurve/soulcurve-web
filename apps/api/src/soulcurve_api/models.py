@@ -72,6 +72,23 @@ class MatchAnalysisResponse(BaseModel):
     moments: list[PlayerMoment]
 
 
+class MatchSummary(BaseModel):
+    match_id: int
+    hero_id: int
+    hero_name: str
+    result: Literal["win", "loss"]
+    kills: int
+    deaths: int
+    assists: int
+    duration_min: int
+    played_at: str
+
+
+class PlayerMatchesResponse(BaseModel):
+    steam_id: str
+    matches: list[MatchSummary]
+
+
 class NewsItem(BaseModel):
     id: int
     title: str

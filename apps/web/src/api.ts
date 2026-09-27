@@ -124,6 +124,31 @@ export async function fetchMatchAnalysis(matchId: string): Promise<MatchAnalysis
   return response.json();
 }
 
+export interface MatchSummary {
+  match_id: number;
+  hero_id: number;
+  hero_name: string;
+  result: "win" | "loss";
+  kills: number;
+  deaths: number;
+  assists: number;
+  duration_min: number;
+  played_at: string;
+}
+
+export interface PlayerMatchesResponse {
+  steam_id: string;
+  matches: MatchSummary[];
+}
+
+export async function fetchPlayerMatches(steamId: string): Promise<PlayerMatchesResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/players/${encodeURIComponent(steamId)}/matches`);
+  if (!response.ok) {
+    throw new Error(`Failed to load match history (${response.status})`);
+  }
+  return response.json();
+}
+
 export interface NewsItem {
   id: number;
   title: string;
