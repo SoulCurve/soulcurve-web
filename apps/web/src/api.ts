@@ -89,3 +89,27 @@ export async function fetchHeroItemStats(heroId: number): Promise<HeroItemStatsR
   }
   return response.json();
 }
+
+export interface PlayerMoment {
+  t_min: number;
+  type: "death" | "objective_loss" | "objective_win" | "good_trade" | "rotation";
+  description: string;
+  wpa_delta: number;
+}
+
+export interface MatchAnalysisResponse {
+  match_id: number;
+  player_id: string;
+  hero_name: string;
+  score: number;
+  summary: string;
+  moments: PlayerMoment[];
+}
+
+export async function fetchMatchAnalysis(matchId: string): Promise<MatchAnalysisResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}/analysis`);
+  if (!response.ok) {
+    throw new Error(`Match not found (${response.status})`);
+  }
+  return response.json();
+}

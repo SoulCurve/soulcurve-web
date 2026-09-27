@@ -53,3 +53,19 @@ class HeroItemStatsResponse(BaseModel):
     hero_id: int
     hero_name: str
     items: list[ItemStat]
+
+
+class PlayerMoment(BaseModel):
+    t_min: float
+    type: Literal["death", "objective_loss", "objective_win", "good_trade", "rotation"]
+    description: str
+    wpa_delta: float
+
+
+class MatchAnalysisResponse(BaseModel):
+    match_id: int
+    player_id: str
+    hero_name: str
+    score: float
+    summary: str
+    moments: list[PlayerMoment]

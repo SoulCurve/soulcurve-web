@@ -71,6 +71,10 @@ function MatchPage() {
             />
           </LineChart>
 
+          <p>
+            <Link to={`/match/${matchId}/analysis`}>See your match analysis &rarr;</Link>
+          </p>
+
           <h2>Events</h2>
           <ul>
             {data.events.map((event) => (

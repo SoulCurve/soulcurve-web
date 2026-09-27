@@ -55,3 +55,32 @@ button {
 button:hover {
   border-color: var(--accent-border);
 }
+
+.score-badge {
+  font-family: var(--mono);
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.moment-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moment-list li {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  border-left-width: 3px;
+}
+
+.moment-list li.moment-negative {
+  border-left-color: #e5484d;
+}
+
+.moment-list li.moment-positive {
+  border-left-color: #30a46c;
+}
