@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchMatchAnalysis } from "../api";
 import type { MatchAnalysisResponse } from "../api";
+import Panel from "../components/Panel";
+import StatTile from "../components/StatTile";
 
 const MOMENT_LABELS: Record<string, string> = {
   death: "Death",
@@ -10,6 +12,39 @@ const MOMENT_LABELS: Record<string, string> = {
   good_trade: "Good trade",
   rotation: "Rotation",
 };
+
+function formatDelta(delta: number) {
+  const pct = Math.round(delta * 100);
+  return `${pct > 0 ? "+" : pct < 0 ? "−" : ""}${Math.abs(pct)}%`;
+}
+
+function ScoreRing({ score }: { score: number }) {
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  const filled = (Math.max(0, Math.min(10, score)) / 10) * circumference;
+  return (
+    <svg className="score-ring" viewBox="0 0 168 168" role="img" aria-label={`Score ${score} out of 10`}>
+      <circle cx="84" cy="84" r={radius} fill="none" stroke="#1f2430" strokeWidth="12" />
+      <circle
+        cx="84"
+        cy="84"
+        r={radius}
+        fill="none"
+        stroke="#1d9cb8"
+        strokeWidth="12"
+        strokeLinecap="round"
+        strokeDasharray={`${filled} ${circumference}`}
+        transform="rotate(-90 84 84)"
+      />
+      <text x="84" y="88" textAnchor="middle" className="score-ring-value">
+        {score.toFixed(1)}
+      </text>
+      <text x="84" y="112" textAnchor="middle" className="score-ring-max">
+        out of 10
+      </text>
+    </svg>
+  );
+}
 
 function AnalysisPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -33,38 +68,62 @@ function AnalysisPage() {
     };
   }, [matchId]);
 
+  const mistakes = data?.moments.filter((m) => m.wpa_delta < 0) ?? [];
+  const goodPlays = data?.moments.filter((m) => m.wpa_delta > 0) ?? [];
+  const lost = mistakes.reduce((sum, m) => sum + m.wpa_delta, 0);
+
   return (
     <main>
-      <p>
-        <Link to={`/match/${matchId}`}>&larr; Back to match</Link>
-      </p>
-      <h1>Match analysis</h1>
+      <Link to={`/match/${matchId}`} className="back-link">
+        &larr; Back to match
+      </Link>
+      <div className="page-head">
+        <span className="eyebrow">Match analysis · #{matchId}</span>
+        <h1>How you played</h1>
+      </div>
 
       {error && <p role="alert">{error}</p>}
-      {!data && !error && <p>Loading...</p>}
+      {!data && !error && <p className="state-text">Analyzing match…</p>}
 
       {data && (
         <>
-          <p>
-            <strong>{data.hero_name}</strong> &middot; score{" "}
-            <span className="score-badge">{data.score.toFixed(1)}/10</span>
-          </p>
-          <p>{data.summary}</p>
+          <div className="grid grid-analysis">
+            <Panel className="score-card">
+              <ScoreRing score={data.score} />
+              <div className="score-meta">
+                <span className="chip chip-muted">{data.hero_name}</span>
+                <p>{data.summary}</p>
+              </div>
+            </Panel>
 
-          <h2>Moments</h2>
-          <ul className="moment-list">
-            {data.moments.map((moment) => (
-              <li
-                key={`${moment.t_min}-${moment.description}`}
-                className={moment.wpa_delta < 0 ? "moment-negative" : "moment-positive"}
-              >
-                {moment.t_min} min — {MOMENT_LABELS[moment.type] ?? moment.type}:{" "}
-                {moment.description} (
-                {moment.wpa_delta > 0 ? "+" : ""}
-                {Math.round(moment.wpa_delta * 100)}% win prob)
-              </li>
-            ))}
-          </ul>
+            <Panel title="Key moments" subtitle="Each moment's effect on your team's win probability">
+              <ul className="timeline">
+                {data.moments.map((moment) => {
+                  const bad = moment.wpa_delta < 0;
+                  return (
+                    <li key={`${moment.t_min}-${moment.description}`}>
+                      <span className="timeline-time">{moment.t_min}m</span>
+                      <span className="timeline-body">
+                        <strong>{moment.description}</strong>
+                        <span>
+                          {bad ? "Mistake" : "Good play"} · {MOMENT_LABELS[moment.type] ?? moment.type}
+                        </span>
+                      </span>
+                      <span className={`delta ${bad ? "delta-bad" : "delta-good"}`}>
+                        {formatDelta(moment.wpa_delta)}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Panel>
+          </div>
+
+          <div className="grid grid-3">
+            <StatTile label="Mistakes" value={mistakes.length} />
+            <StatTile label="Win prob. lost to mistakes" value={formatDelta(lost)} />
+            <StatTile label="Good plays" value={goodPlays.length} />
+          </div>
         </>
       )}
     </main>

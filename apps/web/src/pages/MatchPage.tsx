@@ -1,16 +1,29 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
+  Area,
+  AreaChart,
   CartesianGrid,
-  Line,
-  LineChart,
   ReferenceLine,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 import { fetchWinProbability } from "../api";
 import type { WinProbabilityResponse } from "../api";
+import { CHART, axisProps, percent } from "../chartTheme";
+import Panel from "../components/Panel";
+import StatTile from "../components/StatTile";
+
+function TeamName({ team }: { team: string }) {
+  return (
+    <>
+      <span className={`team-dot team-${team}`} />
+      <span style={{ textTransform: "capitalize" }}>{team}</span>
+    </>
+  );
+}
 
 function MatchPage() {
   const { matchId } = useParams<{ matchId: string }>();
@@ -34,55 +47,100 @@ function MatchPage() {
     };
   }, [matchId]);
 
+  const pWins = data?.points.map((p) => p.p_win) ?? [];
+  const lowest = pWins.length ? Math.min(...pWins) : 0;
+  const highest = pWins.length ? Math.max(...pWins) : 0;
+
   return (
     <main>
-      <p>
-        <Link to="/">&larr; New search</Link>
-      </p>
-      <h1>Match {matchId}</h1>
+      <Link to="/" className="back-link">
+        &larr; New search
+      </Link>
+      <div className="page-head">
+        <span className="eyebrow">Match</span>
+        <h1>#{matchId}</h1>
+      </div>
 
       {error && <p role="alert">{error}</p>}
-      {!data && !error && <p>Loading...</p>}
+      {!data && !error && <p className="state-text">Loading match…</p>}
 
       {data && (
         <>
-          <p>
-            Model version: <code>{data.model_version}</code> · Winner:{" "}
-            <strong>{data.winner}</strong>
-          </p>
-          <LineChart
-            width={640}
-            height={320}
-            data={data.points}
-            margin={{ top: 16, right: 16, bottom: 16, left: 0 }}
+          <div className="grid grid-3">
+            <StatTile label="Winner" value={<TeamName team={data.winner} />} />
+            <StatTile label="Lowest point" value={percent(lowest)} />
+            <StatTile label="Highest point" value={percent(highest)} />
+          </div>
+
+          <Panel
+            title="Win probability"
+            subtitle={`From the ${data.team_perspective} team's side · model ${data.model_version}`}
+            action={
+              <Link to={`/match/${matchId}/analysis`} className="button button-primary">
+                Analyze my play
+              </Link>
+            }
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="t_min" type="number" domain={["dataMin", "dataMax"]} unit="min" />
-            <YAxis domain={[0, 1]} tickFormatter={(v: number) => `${Math.round(v * 100)}%`} />
-            <Tooltip formatter={(value) => `${Math.round(Number(value) * 100)}%`} />
-            <ReferenceLine y={0.5} strokeDasharray="4 4" />
-            <Line
-              type="monotone"
-              dataKey="p_win"
-              stroke="var(--accent)"
-              dot={false}
-              strokeWidth={2}
-              isAnimationActive={false}
-            />
-          </LineChart>
+            <div className="chart-box">
+              <ResponsiveContainer>
+                <AreaChart data={data.points} margin={{ top: 8, right: 8, bottom: 0, left: -12 }}>
+                  <defs>
+                    <linearGradient id="wp-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0" stopColor={CHART.accent} stopOpacity={0.35} />
+                      <stop offset="1" stopColor={CHART.accent} stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid stroke={CHART.grid} vertical={false} />
+                  <XAxis
+                    dataKey="t_min"
+                    type="number"
+                    domain={["dataMin", "dataMax"]}
+                    unit="m"
+                    {...axisProps}
+                  />
+                  <YAxis domain={[0, 1]} tickFormatter={percent} {...axisProps} axisLine={false} />
+                  <ReferenceLine y={0.5} stroke={CHART.reference} strokeDasharray="4 4" />
+                  <Tooltip
+                    cursor={{ stroke: CHART.axis, strokeDasharray: "3 3" }}
+                    content={({ active, payload, label }) =>
+                      active && payload?.length ? (
+                        <div className="chart-tooltip">
+                          {label} min · <strong>{percent(Number(payload[0].value))}</strong> to
+                          win
+                        </div>
+                      ) : null
+                    }
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="p_win"
+                    stroke={CHART.accent}
+                    strokeWidth={2}
+                    fill="url(#wp-fill)"
+                    activeDot={{ r: 5, stroke: "#12151c", strokeWidth: 2 }}
+                    isAnimationActive={false}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </Panel>
 
-          <p>
-            <Link to={`/match/${matchId}/analysis`}>See your match analysis &rarr;</Link>
-          </p>
-
-          <h2>Events</h2>
-          <ul>
-            {data.events.map((event) => (
-              <li key={`${event.t_min}-${event.detail}`}>
-                {event.t_min} min — {event.type}: {event.detail} ({event.team})
-              </li>
-            ))}
-          </ul>
+          <Panel title="Objectives">
+            <ul className="timeline">
+              {data.events.map((event) => (
+                <li key={`${event.t_min}-${event.detail}-${event.team}`}>
+                  <span className="timeline-time">{event.t_min}m</span>
+                  <span className="timeline-body">
+                    <strong>{event.detail}</strong>
+                    <span style={{ textTransform: "capitalize" }}>{event.type}</span>
+                  </span>
+                  <span className="stat-value" style={{ fontSize: 13, fontWeight: 500 }}>
+                    <TeamName team={event.team} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Panel>
         </>
       )}
     </main>

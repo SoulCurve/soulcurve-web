@@ -27,7 +27,9 @@ function AuthStatus() {
           </button>
         </>
       ) : (
-        <a href={steamLoginUrl()}>Sign in with Steam</a>
+        <a className="button button-steam" href={steamLoginUrl()}>
+          Sign in with Steam
+        </a>
       )}
     </div>
   );

@@ -33,7 +33,10 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
 function FaqPage() {
   return (
     <main>
-      <h1>FAQ</h1>
+      <div className="page-head">
+        <span className="eyebrow">FAQ</span>
+        <h1>Questions &amp; answers</h1>
+      </div>
       <ul className="faq-list">
         {FAQ_ITEMS.map((item) => (
           <li key={item.question}>
