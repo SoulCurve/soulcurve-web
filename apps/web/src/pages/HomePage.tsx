@@ -79,8 +79,8 @@ function SampleMatch() {
 }
 
 const SEARCH_MODES = {
-  match: { label: "Match", placeholder: "Match ID…" },
   player: { label: "Player", placeholder: "Steam ID or profile URL…" },
+  match: { label: "Match", placeholder: "Match ID…" },
 } as const;
 
 type SearchMode = keyof typeof SEARCH_MODES;
@@ -94,7 +94,7 @@ function parseQuery(raw: string) {
 function SearchBar() {
   const navigate = useNavigate();
   const [steamId] = useSteamId();
-  const [mode, setMode] = useState<SearchMode>("match");
+  const [mode, setMode] = useState<SearchMode>("player");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

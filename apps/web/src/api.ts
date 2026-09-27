@@ -57,6 +57,7 @@ export interface HeroStat {
 
 export interface HeroStatsResponse {
   patch: string;
+  rank: string | null;
   heroes: HeroStat[];
 }
 
@@ -74,10 +75,19 @@ export interface HeroItemStatsResponse {
   items: ItemStat[];
 }
 
-export async function fetchHeroStats(): Promise<HeroStatsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/stats/heroes`);
+export async function fetchHeroStats(rank?: string | null): Promise<HeroStatsResponse> {
+  const query = rank ? `?rank=${encodeURIComponent(rank)}` : "";
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes${query}`);
   if (!response.ok) {
     throw new Error(`Failed to load hero stats (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchRanks(): Promise<string[]> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/ranks`);
+  if (!response.ok) {
+    throw new Error(`Failed to load ranks (${response.status})`);
   }
   return response.json();
 }

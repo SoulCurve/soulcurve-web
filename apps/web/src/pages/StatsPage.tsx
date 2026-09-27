@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
-import { fetchHeroItemStats, fetchHeroStats } from "@/api";
+import { fetchHeroItemStats, fetchHeroStats, fetchRanks } from "@/api";
 import type { HeroStat, ItemStat } from "@/api";
 import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
@@ -165,11 +165,37 @@ function RateTable<T extends HeroStat | ItemStat>({
   );
 }
 
+function RankSelect({ value, onChange }: { value: string; onChange: (rank: string) => void }) {
+  const ranks = useAsync(fetchRanks, "ranks");
+  return (
+    <div className="relative">
+      <select
+        aria-label="Filter by rank"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-9 w-full cursor-pointer appearance-none rounded-md border bg-card py-1.5 pr-8 pl-3 text-sm outline-none focus-visible:border-soul/60 sm:w-40"
+      >
+        <option value="">All Ranks</option>
+        {ranks.data?.map((rank) => (
+          <option key={rank} value={rank}>
+            {rank}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
+
 function StatsPage() {
   const [params, setParams] = useSearchParams();
   const heroParam = params.get("hero");
   const query = params.get("q") ?? "";
-  const heroes = useAsync(fetchHeroStats, "heroes");
+  const rank = params.get("rank") ?? "";
+  const heroes = useAsync(() => fetchHeroStats(rank || null), `heroes-${rank}`);
   const selectedHero = heroParam
     ? Number(heroParam)
     : heroes.data
@@ -184,7 +210,7 @@ function StatsPage() {
     <PageShell>
       <PageHeader
         title="Heroes & Items"
-        description={`Win and pick rates for ${heroes.data ? `patch ${heroes.data.patch}` : "the current patch"}. Select a hero to see which items win games on it.`}
+        description={`Win and pick rates for ${heroes.data ? `patch ${heroes.data.patch}` : "the current patch"}${rank ? ` · ${rank} rank` : ""}. Select a hero to see which items win games on it.`}
       />
 
       {heroes.error && <ErrorState message={`${heroes.error}. Refresh to try again.`} />}
@@ -193,25 +219,36 @@ function StatsPage() {
       {heroes.data && (
         <div className="grid gap-6 xl:grid-cols-2">
           <Section title="Heroes" description="Click a column to sort · bars show distance from 50%">
-            <div className="relative mb-4 sm:w-64">
-              <Search
-                className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
-                aria-hidden="true"
-              />
-              <Input
-                type="search"
-                aria-label="Filter heroes"
-                placeholder="Filter heroes…"
-                autoComplete="off"
-                spellCheck={false}
-                value={query}
-                onChange={(e) => {
-                  const next = new URLSearchParams(params);
-                  if (e.target.value) next.set("q", e.target.value);
-                  else next.delete("q");
-                  setParams(next, { replace: true });
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row">
+              <div className="relative flex-1 sm:max-w-64">
+                <Search
+                  className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+                  aria-hidden="true"
+                />
+                <Input
+                  type="search"
+                  aria-label="Filter heroes"
+                  placeholder="Filter heroes…"
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={query}
+                  onChange={(e) => {
+                    const next = new URLSearchParams(params);
+                    if (e.target.value) next.set("q", e.target.value);
+                    else next.delete("q");
+                    setParams(next, { replace: true });
+                  }}
+                  className="pl-8"
+                />
+              </div>
+              <RankSelect
+                value={rank}
+                onChange={(next) => {
+                  const nextParams = new URLSearchParams(params);
+                  if (next) nextParams.set("rank", next);
+                  else nextParams.delete("rank");
+                  setParams(nextParams, { replace: true });
                 }}
-                className="pl-8"
               />
             </div>
             <RateTable

@@ -38,6 +38,7 @@ class HeroStat(BaseModel):
 
 class HeroStatsResponse(BaseModel):
     patch: str
+    rank: str | None = None
     heroes: list[HeroStat]
 
 

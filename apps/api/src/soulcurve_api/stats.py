@@ -4,6 +4,8 @@ Will be replaced with real deadlock-api data in M4; for now it returns
 fixed/mock data, designed so the contract matches the real one.
 """
 
+import hashlib
+
 from fastapi import APIRouter, HTTPException
 
 from soulcurve_api.models import HeroItemStatsResponse, HeroStat, HeroStatsResponse, ItemStat
@@ -11,6 +13,22 @@ from soulcurve_api.models import HeroItemStatsResponse, HeroStat, HeroStatsRespo
 router = APIRouter()
 
 MOCK_PATCH = "mock-patch-1.0"
+
+# Deadlock's ranked tiers (api.deadlock-api.com/v1/assets/ranks), low to high.
+RANKS: list[str] = [
+    "Obscurus",
+    "Initiate",
+    "Seeker",
+    "Acolyte",
+    "Sentinel",
+    "Mystic",
+    "Ritualist",
+    "Emissary",
+    "Oracle",
+    "Phantom",
+    "Ascendant",
+    "Eternus",
+]
 
 _MOCK_HEROES: list[HeroStat] = [
     HeroStat(hero_id=1, name="Abrams", win_rate=0.52, pick_rate=0.18),
@@ -22,6 +40,29 @@ _MOCK_HEROES: list[HeroStat] = [
     HeroStat(hero_id=7, name="Ivy", win_rate=0.53, pick_rate=0.17),
     HeroStat(hero_id=8, name="Vindicta", win_rate=0.46, pick_rate=0.11),
 ]
+
+
+def _rank_adjusted_heroes(rank: str) -> list[HeroStat]:
+    """Deterministic per-rank variance for the mock heroes, so the filter visibly does something.
+
+    Real rank-scoped win/pick rates arrive with the deadlock-api integration (M4);
+    this just needs to look plausible and be stable for a given rank.
+    """
+    heroes = []
+    for hero in _MOCK_HEROES:
+        seed = int(hashlib.sha256(f"{rank}:{hero.hero_id}".encode()).hexdigest(), 16)
+        win_delta = ((seed % 900) - 450) / 10000  # +/-4.5pp
+        pick_delta = (((seed // 900) % 900) - 450) / 10000
+        heroes.append(
+            HeroStat(
+                hero_id=hero.hero_id,
+                name=hero.name,
+                win_rate=round(min(0.75, max(0.25, hero.win_rate + win_delta)), 3),
+                pick_rate=round(min(0.60, max(0.02, hero.pick_rate + pick_delta)), 3),
+            )
+        )
+    return heroes
+
 
 _MOCK_ITEMS_BY_HERO: dict[int, list[ItemStat]] = {
     hero.hero_id: [
@@ -40,9 +81,17 @@ _MOCK_ITEMS_BY_HERO: dict[int, list[ItemStat]] = {
 }
 
 
+@router.get("/api/stats/ranks")
+def ranks() -> list[str]:
+    return RANKS
+
+
 @router.get("/api/stats/heroes")
-def hero_stats() -> HeroStatsResponse:
-    return HeroStatsResponse(patch=MOCK_PATCH, heroes=_MOCK_HEROES)
+def hero_stats(rank: str | None = None) -> HeroStatsResponse:
+    if rank is not None and rank not in RANKS:
+        raise HTTPException(status_code=422, detail="Unknown rank")
+    heroes = _rank_adjusted_heroes(rank) if rank else _MOCK_HEROES
+    return HeroStatsResponse(patch=MOCK_PATCH, rank=rank, heroes=heroes)
 
 
 @router.get("/api/stats/heroes/{hero_id}/items")

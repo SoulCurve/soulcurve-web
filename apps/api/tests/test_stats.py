@@ -32,3 +32,35 @@ def test_hero_item_stats_shape():
 def test_hero_item_stats_404_for_unknown_hero():
     response = client.get("/api/stats/heroes/999999/items")
     assert response.status_code == 404
+
+
+def test_ranks_list():
+    response = client.get("/api/stats/ranks")
+    assert response.status_code == 200
+    ranks = response.json()
+    assert "Eternus" in ranks
+    assert "Obscurus" in ranks
+
+
+def test_hero_stats_filtered_by_rank():
+    response = client.get("/api/stats/heroes", params={"rank": "Eternus"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["rank"] == "Eternus"
+    assert len(body["heroes"]) == 8
+    for hero in body["heroes"]:
+        assert 0.0 <= hero["win_rate"] <= 1.0
+        assert 0.0 <= hero["pick_rate"] <= 1.0
+
+    # deterministic: same rank -> same numbers
+    again = client.get("/api/stats/heroes", params={"rank": "Eternus"}).json()
+    assert again["heroes"] == body["heroes"]
+
+    # a different rank should (almost certainly) shift at least one number
+    other = client.get("/api/stats/heroes", params={"rank": "Obscurus"}).json()
+    assert other["heroes"] != body["heroes"]
+
+
+def test_hero_stats_rejects_unknown_rank():
+    response = client.get("/api/stats/heroes", params={"rank": "Legendary"})
+    assert response.status_code == 422
