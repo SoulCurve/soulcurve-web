@@ -11,19 +11,11 @@ import {
   YAxis,
 } from "recharts";
 import { fetchWinProbability } from "@/api";
-import { CHART, axisProps, percent } from "@/chartTheme";
+import { CHART, axisProps, interpolate, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import MatchHeader from "@/components/site/MatchHeader";
 import { ErrorState, LoadingState, PageShell, Section, Stat, TeamLabel } from "@/components/site/primitives";
 import { useAsync } from "@/lib/useAsync";
-
-function interpolate(points: { t_min: number; p_win: number }[], t: number) {
-  const after = points.findIndex((p) => p.t_min >= t);
-  if (after <= 0) return points[Math.max(after, 0)].p_win;
-  const a = points[after - 1];
-  const b = points[after];
-  return a.p_win + ((t - a.t_min) / (b.t_min - a.t_min)) * (b.p_win - a.p_win);
-}
 
 function MatchPage() {
   const { matchId = "" } = useParams<{ matchId: string }>();

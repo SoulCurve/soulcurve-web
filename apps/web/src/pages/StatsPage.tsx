@@ -1,9 +1,14 @@
+import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 import { fetchHeroItemStats, fetchHeroStats } from "@/api";
 import type { HeroStat, ItemStat } from "@/api";
 import { percent } from "@/chartTheme";
+import GameIcon from "@/components/GameIcon";
 import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import type { AssetKind } from "@/lib/gameAssets";
 import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 
@@ -13,7 +18,12 @@ function WinRateBar({ rate }: { rate: number }) {
   const width = `${(Math.abs(edge) / 0.1) * 50}%`;
   return (
     <div className="flex items-center justify-end gap-3">
-      <span className={cn("w-12 text-right font-mono tabular-nums", edge >= 0 ? "text-foreground" : "text-muted-foreground")}>
+      <span
+        className={cn(
+          "w-12 text-right font-mono tabular-nums",
+          edge >= 0 ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
         {percent(rate)}
       </span>
       <div className="relative hidden h-1.5 w-28 rounded-full bg-white/[0.04] sm:block" aria-hidden="true">
@@ -27,31 +37,87 @@ function WinRateBar({ rate }: { rate: number }) {
   );
 }
 
+type SortKey = "name" | "win_rate" | "pick_rate";
+type Sort = { key: SortKey; desc: boolean };
+
+function SortHeader({
+  label,
+  short,
+  column,
+  sort,
+  onSort,
+  className,
+}: {
+  label: string;
+  short?: string;
+  column: SortKey;
+  sort: Sort;
+  onSort: (sort: Sort) => void;
+  className?: string;
+}) {
+  const active = sort.key === column;
+  const Icon = !active ? ChevronsUpDown : sort.desc ? ChevronDown : ChevronUp;
+  return (
+    <TableHead className={className} aria-sort={active ? (sort.desc ? "descending" : "ascending") : "none"}>
+      <button
+        type="button"
+        onClick={() => onSort({ key: column, desc: active ? !sort.desc : column !== "name" })}
+        className={cn(
+          "inline-flex items-center gap-1 transition-colors hover:text-foreground",
+          active ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
+        {short ? (
+          <>
+            <span className="sm:hidden">{short}</span>
+            <span className="hidden sm:inline">{label}</span>
+          </>
+        ) : (
+          label
+        )}
+        <Icon className={cn("size-3.5", !active && "hidden sm:block")} aria-hidden="true" />
+      </button>
+    </TableHead>
+  );
+}
+
 function RateTable<T extends HeroStat | ItemStat>({
   rows,
-  nameLabel,
+  kind,
   getKey,
   selectedKey,
   onSelect,
 }: {
   rows: T[];
-  nameLabel: string;
+  kind: AssetKind;
   getKey: (row: T) => number;
   selectedKey?: number | null;
   onSelect?: (row: T) => void;
 }) {
-  const sorted = [...rows].sort((a, b) => b.win_rate - a.win_rate);
+  const [sort, setSort] = useState<Sort>({ key: "win_rate", desc: true });
+  const sorted = [...rows].sort((a, b) => {
+    const order = sort.key === "name" ? a.name.localeCompare(b.name) : a[sort.key] - b[sort.key];
+    return sort.desc ? -order : order;
+  });
+
   return (
     <Table>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
           <TableHead className="hidden w-10 sm:table-cell">#</TableHead>
-          <TableHead>{nameLabel}</TableHead>
-          <TableHead className="text-right">Win Rate</TableHead>
-          <TableHead className="w-24 text-right">Pick Rate</TableHead>
+          <SortHeader label={kind === "hero" ? "Hero" : "Item"} column="name" sort={sort} onSort={setSort} />
+          <SortHeader label="Win Rate" short="Win" column="win_rate" sort={sort} onSort={setSort} className="text-right" />
+          <SortHeader label="Pick Rate" short="Pick" column="pick_rate" sort={sort} onSort={setSort} className="text-right sm:w-28" />
         </TableRow>
       </TableHeader>
       <TableBody>
+        {sorted.length === 0 && (
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={4} className="py-6 text-center text-muted-foreground">
+              No matches.
+            </TableCell>
+          </TableRow>
+        )}
         {sorted.map((row, i) => {
           const key = getKey(row);
           const selected = selectedKey === key;
@@ -62,23 +128,28 @@ function RateTable<T extends HeroStat | ItemStat>({
               className={cn(onSelect && "cursor-pointer", selected && "bg-soul-dim hover:bg-soul-dim")}
               onClick={onSelect ? () => onSelect(row) : undefined}
             >
-              <TableCell className="hidden font-mono text-muted-foreground tabular-nums sm:table-cell">{i + 1}</TableCell>
+              <TableCell className="hidden font-mono text-muted-foreground tabular-nums sm:table-cell">
+                {i + 1}
+              </TableCell>
               <TableCell>
-                {onSelect ? (
-                  <button
-                    type="button"
-                    className="text-left hover:text-soul"
-                    aria-pressed={selected}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelect(row);
-                    }}
-                  >
-                    {row.name}
-                  </button>
-                ) : (
-                  row.name
-                )}
+                <div className="flex items-center gap-2.5">
+                  <GameIcon name={row.name} kind={kind} />
+                  {onSelect ? (
+                    <button
+                      type="button"
+                      className="text-left hover:text-soul"
+                      aria-pressed={selected}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelect(row);
+                      }}
+                    >
+                      {row.name}
+                    </button>
+                  ) : (
+                    row.name
+                  )}
+                </div>
               </TableCell>
               <TableCell>
                 <WinRateBar rate={row.win_rate} />
@@ -97,8 +168,13 @@ function RateTable<T extends HeroStat | ItemStat>({
 function StatsPage() {
   const [params, setParams] = useSearchParams();
   const heroParam = params.get("hero");
+  const query = params.get("q") ?? "";
   const heroes = useAsync(fetchHeroStats, "heroes");
-  const selectedHero = heroParam ? Number(heroParam) : (heroes.data ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate)[0]?.hero_id : null);
+  const selectedHero = heroParam
+    ? Number(heroParam)
+    : heroes.data
+      ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate)[0]?.hero_id
+      : null;
   const items = useAsync(
     () => (selectedHero ? fetchHeroItemStats(selectedHero) : Promise.resolve(null)),
     `items-${selectedHero}`,
@@ -112,17 +188,42 @@ function StatsPage() {
       />
 
       {heroes.error && <ErrorState message={`${heroes.error}. Refresh to try again.`} />}
-      {!heroes.data && !heroes.error && <LoadingState label="Loading stats…" />}
+      {!heroes.data && !heroes.error && <LoadingState label="Loading stats…" variant="rows" />}
 
       {heroes.data && (
         <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-          <Section title="Heroes" description="Sorted by win rate · bars show distance from 50%">
+          <Section title="Heroes" description="Click a column to sort · bars show distance from 50%">
+            <div className="relative mb-4 sm:w-64">
+              <Search
+                className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+                aria-hidden="true"
+              />
+              <Input
+                type="search"
+                aria-label="Filter heroes"
+                placeholder="Filter heroes…"
+                autoComplete="off"
+                spellCheck={false}
+                value={query}
+                onChange={(e) => {
+                  const next = new URLSearchParams(params);
+                  if (e.target.value) next.set("q", e.target.value);
+                  else next.delete("q");
+                  setParams(next, { replace: true });
+                }}
+                className="pl-8"
+              />
+            </div>
             <RateTable
-              rows={heroes.data.heroes}
-              nameLabel="Hero"
+              rows={heroes.data.heroes.filter((h) => h.name.toLowerCase().includes(query.trim().toLowerCase()))}
+              kind="hero"
               getKey={(h) => h.hero_id}
               selectedKey={selectedHero}
-              onSelect={(h) => setParams({ hero: String(h.hero_id) }, { replace: true })}
+              onSelect={(h) => {
+                const next = new URLSearchParams(params);
+                next.set("hero", String(h.hero_id));
+                setParams(next, { replace: true });
+              }}
             />
           </Section>
 
@@ -132,8 +233,8 @@ function StatsPage() {
             className="lg:self-start"
           >
             {items.error && <ErrorState message={items.error} />}
-            {!items.data && !items.error && <LoadingState label="Loading items…" />}
-            {items.data && <RateTable rows={items.data.items} nameLabel="Item" getKey={(it) => it.item_id} />}
+            {!items.data && !items.error && <LoadingState label="Loading items…" variant="rows" />}
+            {items.data && <RateTable rows={items.data.items} kind="item" getKey={(it) => it.item_id} />}
           </Section>
         </div>
       )}

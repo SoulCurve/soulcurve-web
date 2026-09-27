@@ -8,8 +8,18 @@ export const CHART = {
 
 export const axisProps = {
   stroke: CHART.grid,
-  tick: { fill: CHART.axis, fontSize: 11, fontFamily: "Geist Mono Variable, monospace" },
+  tick: { fill: CHART.axis, fontSize: 11, fontFamily: "IBM Plex Mono, monospace" },
   tickLine: false,
 } as const;
 
 export const percent = (v: number) => `${Math.round(v * 100)}%`;
+
+// Win probability at time `t`, linearly interpolated between the model's samples.
+export function interpolate(points: { t_min: number; p_win: number }[], t: number) {
+  const after = points.findIndex((p) => p.t_min >= t);
+  if (after === -1) return points[points.length - 1].p_win;
+  if (after === 0) return points[0].p_win;
+  const a = points[after - 1];
+  const b = points[after];
+  return a.p_win + ((t - a.t_min) / (b.t_min - a.t_min)) * (b.p_win - a.p_win);
+}

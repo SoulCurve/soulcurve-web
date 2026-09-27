@@ -48,7 +48,7 @@ function NewsPage() {
       />
 
       {error && <ErrorState message={`${error}. Refresh to try again.`} />}
-      {!data && !error && <LoadingState label="Loading news…" />}
+      {!data && !error && <LoadingState label="Loading news…" variant="list" />}
 
       {data && items.length === 0 && (
         <p className="text-sm text-muted-foreground">Nothing here yet. Check back after the next patch.</p>

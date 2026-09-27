@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export function PageShell({ children }: { children: ReactNode }) {
@@ -45,7 +46,7 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section className={cn("deco-frame rounded-lg border bg-card", className)}>
+    <section className={cn("deco-frame min-w-0 rounded-lg border bg-card", className)}>
       {(title || action) && (
         <div className="flex items-start justify-between gap-4 border-b px-5 py-4">
           <div className="flex flex-col gap-0.5">
@@ -73,10 +74,7 @@ export function Stat({ label, value, hint }: { label: string; value: ReactNode; 
 export function TeamLabel({ team }: { team: string }) {
   return (
     <span className="inline-flex items-center gap-2 capitalize">
-      <span
-        aria-hidden="true"
-        className={cn("size-2 rotate-45", team === "amber" ? "bg-amber" : "bg-sapphire")}
-      />
+      <span aria-hidden="true" className={cn("size-2 rotate-45", team === "amber" ? "bg-amber" : "bg-sapphire")} />
       {team}
     </span>
   );
@@ -125,11 +123,38 @@ export function RouteTabs({ tabs }: { tabs: { to: string; label: string; end?: b
   );
 }
 
-export function LoadingState({ label }: { label: string }) {
+// Skeletons shaped like the content they stand in for, so the layout doesn't jump on load.
+export function LoadingState({ label, variant = "cards" }: { label: string; variant?: "cards" | "rows" | "list" }) {
   return (
-    <p className="text-sm text-muted-foreground" role="status">
-      {label}
-    </p>
+    <div role="status" className="flex flex-col gap-3">
+      <span className="sr-only">{label}</span>
+      {variant === "cards" && (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="h-24 rounded-lg" />
+            ))}
+          </div>
+          <Skeleton className="h-80 rounded-lg" />
+        </>
+      )}
+      {variant === "rows" &&
+        Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <Skeleton className="size-7" />
+            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-4 w-12" />
+          </div>
+        ))}
+      {variant === "list" &&
+        Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="flex flex-col gap-2 border-b py-6">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-4 w-1/2" />
+          </div>
+        ))}
+    </div>
   );
 }
 
