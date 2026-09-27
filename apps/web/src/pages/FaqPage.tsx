@@ -36,7 +36,7 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
 function FaqPage() {
   return (
     <PageShell>
-      <PageHeader eyebrow="FAQ" title="Questions & Answers" />
+      <PageHeader title="Questions & Answers" />
       <Accordion className="max-w-3xl gap-2" defaultValue={[FAQ_ITEMS[0].question]}>
         {FAQ_ITEMS.map((item) => (
           <AccordionItem

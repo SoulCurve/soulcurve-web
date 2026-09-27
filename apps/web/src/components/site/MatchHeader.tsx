@@ -12,7 +12,7 @@ function MatchHeader({ matchId }: { matchId: string }) {
         <ChevronLeft className="size-4" aria-hidden="true" />
         New Search
       </Link>
-      <PageHeader eyebrow="Match" title={<span className="font-mono">#{matchId}</span>} />
+      <PageHeader title={`Match #${matchId}`} />
       <RouteTabs
         tabs={[
           { to: `/match/${matchId}`, label: "Overview", end: true },

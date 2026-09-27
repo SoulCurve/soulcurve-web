@@ -5,6 +5,7 @@ import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
 import MatchPage from "@/pages/MatchPage";
 import NewsPage from "@/pages/NewsPage";
+import PlayerPage from "@/pages/PlayerPage";
 import StatsPage from "@/pages/StatsPage";
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/match/:matchId" element={<MatchPage />} />
         <Route path="/match/:matchId/analysis" element={<AnalysisPage />} />
+        <Route path="/player/:steamId" element={<PlayerPage />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/news" element={<NewsPage />} />
         <Route path="/faq" element={<FaqPage />} />

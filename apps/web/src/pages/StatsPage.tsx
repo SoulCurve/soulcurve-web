@@ -45,7 +45,7 @@ function RateTable<T extends HeroStat | ItemStat>({
     <Table>
       <TableHeader>
         <TableRow className="hover:bg-transparent">
-          <TableHead className="w-10">#</TableHead>
+          <TableHead className="hidden w-10 sm:table-cell">#</TableHead>
           <TableHead>{nameLabel}</TableHead>
           <TableHead className="text-right">Win Rate</TableHead>
           <TableHead className="w-24 text-right">Pick Rate</TableHead>
@@ -62,7 +62,7 @@ function RateTable<T extends HeroStat | ItemStat>({
               className={cn(onSelect && "cursor-pointer", selected && "bg-soul-dim hover:bg-soul-dim")}
               onClick={onSelect ? () => onSelect(row) : undefined}
             >
-              <TableCell className="font-mono text-muted-foreground tabular-nums">{i + 1}</TableCell>
+              <TableCell className="hidden font-mono text-muted-foreground tabular-nums sm:table-cell">{i + 1}</TableCell>
               <TableCell>
                 {onSelect ? (
                   <button
@@ -107,9 +107,8 @@ function StatsPage() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow={heroes.data ? `Patch ${heroes.data.patch}` : "Stats"}
         title="Heroes & Items"
-        description="Win and pick rates for the current patch. Select a hero to see which items win games on it."
+        description={`Win and pick rates for ${heroes.data ? `patch ${heroes.data.patch}` : "the current patch"}. Select a hero to see which items win games on it.`}
       />
 
       {heroes.error && <ErrorState message={`${heroes.error}. Refresh to try again.`} />}

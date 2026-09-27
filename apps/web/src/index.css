@@ -1,9 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/big-shoulders-display";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -49,9 +49,8 @@
 }
 
 @theme inline {
-  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
-  --font-display: "Big Shoulders Display Variable", "Geist Variable", sans-serif;
+  --font-sans: "IBM Plex Mono", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
   --font-heading: var(--font-sans);
 
   --color-background: var(--background);
@@ -104,7 +103,7 @@
 
   body {
     @apply bg-background text-foreground min-h-svh;
-    font-size: 15px;
+    font-size: 14px;
   }
 
   #root {
@@ -165,7 +164,7 @@
   }
 
   .display {
-    @apply font-display font-bold tracking-[0.01em] uppercase;
+    @apply font-semibold tracking-[0.06em] uppercase;
   }
 }
 

@@ -12,12 +12,10 @@ export function PageShell({ children }: { children: ReactNode }) {
 }
 
 export function PageHeader({
-  eyebrow,
   title,
   description,
   actions,
 }: {
-  eyebrow?: ReactNode;
   title: ReactNode;
   description?: ReactNode;
   actions?: ReactNode;
@@ -25,8 +23,7 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div className="flex flex-col gap-2">
-        {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-        <h1 className="display text-4xl leading-none sm:text-5xl">{title}</h1>
+        <h1 className="display text-2xl leading-tight sm:text-3xl">{title}</h1>
         {description && <p className="max-w-xl text-pretty text-muted-foreground">{description}</p>}
       </div>
       {actions}

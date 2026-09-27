@@ -15,7 +15,7 @@ function SiteHeader() {
       <div className="mx-auto flex h-14 w-full max-w-6xl items-center gap-2 px-4 sm:gap-6 sm:px-6">
         <Link to="/" className="flex items-center gap-2.5 text-foreground" translate="no">
           <BrandMark />
-          <span className="display text-xl leading-none">SoulCurve</span>
+          <span className="display text-base leading-none">SoulCurve</span>
         </Link>
         <nav className="flex flex-1 items-center sm:gap-1" aria-label="Main">
           {NAV.map((item) => (

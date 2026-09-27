@@ -26,7 +26,6 @@ function NewsPage() {
   return (
     <PageShell>
       <PageHeader
-        eyebrow="News"
         title="Patch Notes & Updates"
         actions={
           <Tabs

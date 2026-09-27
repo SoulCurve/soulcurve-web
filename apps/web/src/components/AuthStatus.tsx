@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react";
-import { fetchMe, logout, steamLoginUrl } from "@/api";
+import { logout, steamLoginUrl } from "@/api";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { useSteamId } from "@/lib/useSteamId";
 
 function AuthStatus() {
-  const [steamId, setSteamId] = useState<string | null | "loading">("loading");
-
-  useEffect(() => {
-    fetchMe()
-      .then((me) => setSteamId(me.steam_id))
-      .catch(() => setSteamId(null));
-  }, []);
+  const [steamId, setSteamId] = useSteamId();
 
   async function handleLogout() {
     await logout();

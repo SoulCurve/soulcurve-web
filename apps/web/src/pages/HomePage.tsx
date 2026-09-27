@@ -1,14 +1,15 @@
+import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, YAxis } from "recharts";
-import { fetchHeroStats, fetchMatchAnalysis, fetchNews, fetchWinProbability } from "@/api";
+import { fetchHeroStats, fetchMatchAnalysis, fetchNews, fetchWinProbability, steamLoginUrl } from "@/api";
 import { CHART, percent } from "@/chartTheme";
 import { PageShell, Section } from "@/components/site/primitives";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAsync } from "@/lib/useAsync";
+import { useSteamId } from "@/lib/useSteamId";
 import { cn } from "@/lib/utils";
 
 const SAMPLE_MATCH = "1";
@@ -23,7 +24,7 @@ function SampleMatch() {
       className="deco-frame group flex flex-col gap-4 rounded-lg border bg-card p-5 transition-colors hover:border-soul/40"
     >
       <div className="flex items-center justify-between">
-        <span className="eyebrow">Sample Match #{SAMPLE_MATCH}</span>
+        <span className="text-sm text-muted-foreground">Sample match #{SAMPLE_MATCH}</span>
         <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
       </div>
       <div className="h-28">
@@ -73,16 +74,87 @@ function SampleMatch() {
   );
 }
 
-function HomePage() {
+const SEARCH_MODES = {
+  match: { label: "Match", placeholder: "Match ID…" },
+  player: { label: "Player", placeholder: "Steam ID or profile URL…" },
+} as const;
+
+type SearchMode = keyof typeof SEARCH_MODES;
+
+// Accepts a bare ID or a steamcommunity.com/profiles/<id> URL.
+function parseQuery(raw: string) {
+  const trimmed = raw.trim();
+  return trimmed.match(/profiles\/(\d+)/)?.[1] ?? trimmed;
+}
+
+function SearchBar() {
   const navigate = useNavigate();
-  const heroes = useAsync(fetchHeroStats, "heroes");
-  const news = useAsync(fetchNews, "news");
+  const [steamId] = useSteamId();
+  const [mode, setMode] = useState<SearchMode>("match");
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const id = String(new FormData(e.currentTarget).get("match") ?? "").trim();
-    if (id) navigate(`/match/${id}`);
+    const id = parseQuery(String(new FormData(e.currentTarget).get("q") ?? ""));
+    if (id) navigate(`/${mode}/${encodeURIComponent(id)}`);
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex w-full max-w-2xl flex-col items-center gap-3 sm:flex-row">
+      <div className="flex h-12 w-full flex-1 items-center rounded-lg border bg-card transition-colors focus-within:border-soul/60">
+        <Search className="ml-4 size-4 shrink-0 text-soul" aria-hidden="true" />
+        <label htmlFor="search-mode" className="sr-only">
+          Search Type
+        </label>
+        <div className="relative">
+          <select
+            id="search-mode"
+            value={mode}
+            onChange={(e) => setMode(e.target.value as SearchMode)}
+            className="h-12 cursor-pointer appearance-none bg-transparent pr-7 pl-2.5 text-sm font-semibold tracking-wider text-soul uppercase outline-none"
+          >
+            {Object.entries(SEARCH_MODES).map(([value, m]) => (
+              <option key={value} value={value} className="bg-card text-foreground">
+                {m.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute top-1/2 right-2 size-3.5 -translate-y-1/2 text-soul" aria-hidden="true" />
+        </div>
+        <span className="h-6 w-px shrink-0 bg-border" aria-hidden="true" />
+        <label htmlFor="search-q" className="sr-only">
+          {mode === "match" ? "Match ID" : "Steam ID"}
+        </label>
+        <input
+          id="search-q"
+          name="q"
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={SEARCH_MODES[mode].placeholder}
+          className="h-12 min-w-0 flex-1 bg-transparent px-3 text-base outline-none placeholder:text-muted-foreground sm:text-sm"
+        />
+        <button
+          type="submit"
+          aria-label="Search"
+          className="mr-1.5 grid size-9 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <ArrowRight className="size-4" aria-hidden="true" />
+        </button>
+      </div>
+      {typeof steamId !== "string" && (
+        <>
+          <span className="text-sm text-muted-foreground">or</span>
+          <a href={steamLoginUrl()} className={cn(buttonVariants({ variant: "outline" }), "h-12 shrink-0 px-5")}>
+            Sign In with Steam
+          </a>
+        </>
+      )}
+    </form>
+  );
+}
+
+function HomePage() {
+  const heroes = useAsync(fetchHeroStats, "heroes");
+  const news = useAsync(fetchNews, "news");
 
   const topHeroes = heroes.data
     ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5)
@@ -90,38 +162,20 @@ function HomePage() {
 
   return (
     <PageShell>
-      <section className="grid items-center gap-10 py-6 lg:grid-cols-[1.1fr_1fr] lg:py-12">
-        <div className="flex flex-col gap-6">
-          <span className="eyebrow">Deadlock Match Analytics</span>
-          <h1 className="display text-5xl leading-[0.95] text-balance sm:text-7xl">
-            Every match has a <span className="text-soul">turning point</span>.
-          </h1>
-          <p className="max-w-md text-pretty text-muted-foreground">
-            See how your team&rsquo;s win probability moved minute by minute, and which of your
-            plays cost the most.
-          </p>
-          <form onSubmit={handleSubmit} className="flex w-full max-w-md gap-2">
-            <label htmlFor="match" className="sr-only">
-              Match ID
-            </label>
-            <Input
-              id="match"
-              name="match"
-              inputMode="numeric"
-              autoComplete="off"
-              spellCheck={false}
-              placeholder="Match ID, e.g. 38421907…"
-              className="h-10 text-base sm:text-sm"
-            />
-            <Button type="submit" className="h-10 px-4">
-              Analyze
-            </Button>
-          </form>
+      <section className="flex flex-col items-center gap-5 py-8 text-center sm:py-14">
+        <h1 className="text-3xl font-semibold text-balance sm:text-4xl">
+          Every match has a <span className="text-soul">turning point</span>.
+        </h1>
+        <p className="max-w-lg text-pretty text-muted-foreground">
+          See how your team&rsquo;s win probability moved minute by minute, and which of your plays cost the most.
+        </p>
+        <div className="mt-3 flex w-full justify-center">
+          <SearchBar />
         </div>
-        <SampleMatch />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3">
+        <SampleMatch />
         <Section
           title="Top Heroes"
           description={heroes.data ? `Highest win rate · patch ${heroes.data.patch}` : undefined}
