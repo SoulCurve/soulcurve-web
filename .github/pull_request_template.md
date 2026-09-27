@@ -1,16 +1,16 @@
-## Ne değişti
-<!-- Kullanıcı / geliştirici açısından ne farklı? -->
+## What changed
+<!-- What's different from a user/developer perspective? -->
 
-## Neden
+## Why
 Closes #
 
-## Nasıl doğrulandı
-<!-- Çalıştırılan komutlar ve çıktıları. "Çalışması lazım" yeterli değil. -->
+## How it was verified
+<!-- Commands run and their output. "Should work" is not enough. -->
 
-## Model değişikliği ise
-<!-- Önce/sonra: log-loss, Brier, test dönemi. Değilse bu bölümü silin. -->
+## If this is a model change
+<!-- Before/after: log-loss, Brier, test period. Otherwise delete this section. -->
 
-## Kontrol listesi
-- [ ] Testler ve lint yeşil
-- [ ] İlgili docs/ güncellendi
-- [ ] Gizli bilgi (anahtar, token) eklenmedi
+## Checklist
+- [ ] Tests and lint are green
+- [ ] Relevant docs/ updated
+- [ ] No secrets (keys, tokens) added

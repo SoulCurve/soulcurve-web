@@ -1,39 +1,43 @@
-# Katkı Rehberi
+# Contributing Guide
 
-SoulCurve iki kişilik bir ekip: **A (Gün)** uygulama, **B (Deniz)** veri/model.
-Bu kurallar iki repoda da aynıdır.
+SoulCurve is a two-person team: **A (Gün)** builds the app, **B (Deniz)** builds
+data/model. These rules are the same in both repos.
 
-## İş takibi
-- Her iş bir **issue**'dur ve bir **milestone**'a (M0-M5, bkz. [ROADMAP](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md)) bağlıdır.
-- Etiketler: `data`, `model`, `api`, `web`, `infra`, `docs`, `bug`, `faz-2`.
-- `faz-2` etiketli işler Faz 1 kapısı geçilene kadar başlatılmaz.
+## Work tracking
+- Every piece of work is an **issue**, tied to a **milestone** (M0-M5, see
+  [ROADMAP](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md)).
+- Labels: `data`, `model`, `api`, `web`, `infra`, `docs`, `bug`, `phase-2`.
+- Work labeled `phase-2` is not started until the Phase 1 gate is passed.
 
-## Branch ve commit
-- `main` korumalıdır; doğrudan push yapılmaz.
-- Branch adı: `<tip>/<issue-no>-<kısa-açıklama>`, örn. `feat/12-snapshot-features`.
-- Commit mesajı [Conventional Commits](https://www.conventionalcommits.org/) formatında:
+## Branch and commit
+- `main` is protected; no direct pushes.
+- Branch name: `<type>/<issue-no>-<short-description>`, e.g. `feat/12-snapshot-features`.
+- Commit message in [Conventional Commits](https://www.conventionalcommits.org/) format:
   `feat: ...`, `fix: ...`, `docs: ...`, `chore: ...`, `refactor: ...`, `test: ...`.
 
 ## Pull request
-- Küçük tutun; tek konu, tercihen 400 satırın altında.
-- PR açıklaması şablonu doldurur ve ilgili issue'ya `Closes #N` ile bağlanır.
-- **Her PR'ı diğer kişi inceler** (A'nınkini B, B'ninkini A). En az 1 onay + yeşil CI olmadan merge yok.
-- Merge yöntemi: **squash merge**.
-- İnceleme 24 saat içinde yapılmazsa PR sahibi hatırlatır. Acil düzeltmede sahibi merge
-  edebilir, ama inceleme sonradan yapılır.
+- Keep it small: one topic, preferably under 400 lines.
+- The PR description fills out the template and links the related issue with `Closes #N`.
+- **Every PR is reviewed by the other person** (A reviews B's, B reviews A's). No merge
+  without at least 1 approval + green CI.
+- Merge method: **squash merge**.
+- If review doesn't happen within 24 hours, the PR owner sends a reminder. For an urgent
+  fix the owner may merge, with review done afterward.
 
-## "Bitti" tanımı
-- Kod çalıştırıldı ve çıktı okundu. "Çalışması lazım" bitti değildir.
-- Testler ve lint yeşil.
-- Davranış veya karar değiştiyse ilgili doküman (docs/) aynı PR'da güncellendi.
-- Model değişikliklerinde metrikler PR açıklamasında önce/sonra olarak verildi.
+## Definition of "done"
+- The code was run and its output read. "Should work" is not done.
+- Tests and lint are green.
+- If behavior or a decision changed, the relevant doc (docs/) was updated in the same PR.
+- For model changes, metrics are given as before/after in the PR description.
 
-## Kod kuralları
-- Python ortamı **uv** ile yönetilir; global `pip` kullanılmaz.
-- Kütüphane API'leri hafızadan yazılmaz, güncel dokümanla (Context7) doğrulanır.
-- Frontend paketleri `apps/web` içinde tek paket yöneticisiyle (npm) yönetilir; lock dosyası commit edilir.
+## Code conventions
+- The Python environment is managed with **uv**; global `pip` is not used.
+- Library APIs are not written from memory; they're verified against current docs
+  (Context7).
+- Frontend packages in `apps/web` are managed with a single package manager (npm);
+  the lockfile is committed.
 
-## Gizli bilgiler
-- API anahtarı, token vb. **asla** repoya girmez. Yerelde `.env` (gitignore'da),
-  CI'da GitHub Actions secrets kullanılır. `.env.example` dosyası gereken değişkenleri
-  değersiz olarak listeler.
+## Secrets
+- API keys, tokens, etc. **never** go into the repo. Locally: `.env` (gitignored);
+  in CI: GitHub Actions secrets. `.env.example` lists the required variables with
+  placeholder values.

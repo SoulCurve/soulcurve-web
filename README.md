@@ -1,32 +1,32 @@
 # soulcurve-web
 
-SoulCurve'ün uygulama reposu: bir Deadlock maçının zaman içindeki **kazanma olasılığı
-eğrisini** gösteren dashboard. Backend ve frontend bu tek repoda (monorepo) durur.
+SoulCurve's application repo: a dashboard showing a Deadlock match's **win probability
+curve** over time. Backend and frontend live in this single repo (monorepo).
 
-Modeli ve özellik hesabını [`soulcurve-model`](https://github.com/SoulCurve/soulcurve-model)
-reposu üretir. Yol haritası orada tutulur:
-[ROADMAP.md](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md).
+The model and feature computation are produced by the
+[`soulcurve-model`](https://github.com/SoulCurve/soulcurve-model) repo. The roadmap is
+kept there: [ROADMAP.md](https://github.com/SoulCurve/soulcurve-model/blob/main/docs/ROADMAP.md).
 
-## Yapı
+## Structure
 
 ```
 apps/
-  api/    FastAPI (Python, uv): maç verisini çeker, modeli çalıştırır, JSON döner
-  web/    React + Vite (TypeScript): dashboard arayüzü
+  api/    FastAPI (Python, uv): fetches match data, runs the model, returns JSON
+  web/    React + Vite (TypeScript): dashboard UI
 docs/
-  ARCHITECTURE.md   bileşenler, API sözleşmesi, deploy
-  DECISIONS.md      alınan mimari kararlar ve gerekçeleri
+  ARCHITECTURE.md   components, API contract, deploy
+  DECISIONS.md      architectural decisions taken and their rationale
 ```
 
-## Dokümanlar
+## Docs
 
-| Dosya | İçerik |
+| File | Content |
 |---|---|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | API uçları, model yükleme, frontend sayfaları, deploy |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Neden monorepo, neden FastAPI + React, açık kararlar |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | İki kişilik çalışma düzeni, branch/PR kuralları |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | API endpoints, model loading, frontend pages, deploy |
+| [docs/DECISIONS.md](docs/DECISIONS.md) | Why monorepo, why FastAPI + React, open decisions |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Two-person workflow, branch/PR rules |
 
-## Hızlı başlangıç
+## Quick start
 
 ```bash
 # API
@@ -35,13 +35,14 @@ uv sync
 uv run fastapi dev src/soulcurve_api/main.py   # http://localhost:8000/health
 uv run pytest
 
-# Web (ilk kurulumdan sonra, bkz. apps/web/README.md)
+# Web (after initial setup, see apps/web/README.md)
 cd apps/web
 npm install
 npm run dev
 ```
 
-## Faz durumu
+## Phase status
 
-**Faz 1: MVP dashboard.** Yalnızca kazanma olasılığı eğrisi. Hesaplar, ödeme ve coaching
-(Faz 2) model doğrulanıp deadlock-api'nin ticari şartları netleşmeden eklenmez.
+**Phase 1: MVP dashboard.** Win probability curve only. Accounts, payments and coaching
+(Phase 2) will not be added until the model is validated and deadlock-api's commercial
+terms are clarified.

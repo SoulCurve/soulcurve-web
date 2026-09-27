@@ -1,28 +1,28 @@
-# Mimari: soulcurve-web
+# Architecture: soulcurve-web
 
-## Bileşenler
+## Components
 
 ```
- tarayıcı ──► apps/web (React + Vite, statik build)
+ browser ──► apps/web (React + Vite, static build)
                  │  fetch /api/...
                  ▼
              apps/api (FastAPI)
-                 │  1. maç verisini çeker ──► api.deadlock-api.com (REST)
-                 │  2. özellikleri hesaplar ──► soulcurve_model.features (paket)
-                 │  3. tahmin eder ──► LightGBM model (Release artefaktı)
+                 │  1. fetches match data ──► api.deadlock-api.com (REST)
+                 │  2. computes features ──► soulcurve_model.features (package)
+                 │  3. predicts ──► LightGBM model (Release artifact)
                  ▼
-             JSON: kazanma olasılığı serisi + olaylar
+             JSON: win probability series + events
 ```
 
-## API sözleşmesi (Faz 1 taslağı)
+## API contract (Phase 1 draft)
 
-| Uç | Açıklama |
+| Endpoint | Description |
 |---|---|
-| `GET /health` | Canlılık + yüklü model sürümü |
-| `GET /api/matches/{match_id}/win-probability` | Maçın zaman serisi kazanma olasılığı |
-| `GET /api/model` | Model sürümü, eğitim aralığı, metrikler (şeffaflık için) |
+| `GET /health` | Liveness + loaded model version |
+| `GET /api/matches/{match_id}/win-probability` | The match's win-probability time series |
+| `GET /api/model` | Model version, training range, metrics (for transparency) |
 
-Örnek yanıt (`win-probability`):
+Example response (`win-probability`):
 
 ```json
 {
@@ -40,49 +40,51 @@
 }
 ```
 
-Şema FastAPI'nin ürettiği OpenAPI'den okunur. Frontend tipleri bu şemadan üretilir
-(ör. `openapi-typescript`), elle yazılmaz. Böylece iki taraf aynı repoda senkron kalır.
+The schema is read from the OpenAPI spec FastAPI generates. Frontend types are
+generated from this schema (e.g. `openapi-typescript`), never hand-written. This keeps
+both sides in sync in the same repo.
 
-## Model yükleme
+## Model loading
 
-- API bağımlılığı: `soulcurve-model` paketi, git tag'ine sabitlenmiş (bkz. soulcurve-model/docs/ARCHITECTURE.md).
-- Model dosyası: başlangıçta `MODEL_VERSION` ortam değişkenindeki Release'ten indirilir
-  ve yerelde önbelleğe alınır.
-- Başlangıçta `metadata.json` içindeki özellik listesi paketteki listeyle karşılaştırılır,
-  uyuşmazsa API başlamaz (training/serving skew koruması).
+- API dependency: the `soulcurve-model` package, pinned to a git tag (see
+  soulcurve-model/docs/ARCHITECTURE.md).
+- Model file: downloaded on startup from the Release named by the `MODEL_VERSION`
+  environment variable, and cached locally.
+- On startup, the feature list in `metadata.json` is compared against the package's
+  list; a mismatch prevents the API from starting (training/serving skew guard).
 
-## Veri çekme ve önbellek
+## Data fetching and caching
 
-- Tek bir maç için veri, deadlock-api REST uçlarından alınır. Hangi ucun `match_player`
-  snapshot'larını verdiği M4'te OpenAPI şemasından doğrulanacak.
-- Tamamlanmış maçların verisi değişmez, bu yüzden sonuçlar kalıcı önbelleğe alınabilir
-  (Faz 1: dosya/SQLite; ihtiyaç olursa Redis).
-- Rate limit'e saygı: istemci tarafında basit limit ve yeniden deneme.
+- Data for a single match comes from deadlock-api's REST endpoints. Which endpoint
+  provides `match_player` snapshots will be verified against the OpenAPI schema in M4.
+- Completed matches' data never changes, so results can be cached permanently
+  (Phase 1: file/SQLite; Redis if needed).
+- Rate limits are respected: a simple client-side limiter and retry.
 
-## Frontend (Faz 1 sayfaları)
+## Frontend (Phase 1 pages)
 
-1. **Ana sayfa:** maç ID'si ile arama.
-2. **Maç sayfası:** kazanma olasılığı eğrisi (0-100%, %50 referans çizgisi), objective
-   olayları zaman çizelgesinde işaretli, sonuç ve model sürümü.
+1. **Home page:** search by match ID.
+2. **Match page:** win-probability curve (0-100%, 50% reference line), objective
+   events marked on the timeline, result and model version.
 
-## Ortam değişkenleri
+## Environment variables
 
-`.env.example` dosyasında listelenir; gerçek değerler yerelde `.env`, deploy ortamında
-platformun secret yönetimi ile verilir.
+Listed in `.env.example`; real values are provided locally via `.env` and in
+deployed environments via the platform's secret management.
 
-| Değişken | Açıklama |
+| Variable | Description |
 |---|---|
-| `MODEL_VERSION` | Kullanılacak model Release tag'i |
-| `DEADLOCK_API_BASE_URL` | Varsayılan `https://api.deadlock-api.com` |
-| `CACHE_DIR` | Model ve maç önbelleği klasörü |
+| `MODEL_VERSION` | The model Release tag to use |
+| `DEADLOCK_API_BASE_URL` | Defaults to `https://api.deadlock-api.com` |
+| `CACHE_DIR` | Model and match cache directory |
 
-## Deploy (M4'te karar verilecek)
+## Deploy (decided in M4)
 
-Öneri: frontend statik olarak (Vercel / Netlify / Cloudflare Pages), API tek bir
-konteyner olarak (Fly.io / Render / Railway). Faz 1 trafiği düşük olduğundan ücretsiz
-veya en düşük katman yeterli. Karar DECISIONS.md'ye yazılacak.
+Proposal: frontend as a static build (Vercel / Netlify / Cloudflare Pages), API as a
+single container (Fly.io / Render / Railway). Phase 1 traffic is low, so a free or
+lowest tier is enough. The decision will be recorded in DECISIONS.md.
 
 ## CI
 
-- `api` işi: `uv sync --locked`, `ruff check`, `ruff format --check`, `pytest`.
-- `web` işi: frontend kurulunca eklenecek (`npm ci`, `npm run lint`, `npm run build`).
+- `api` job: `uv sync --locked`, `ruff check`, `ruff format --check`, `pytest`.
+- `web` job: added once the frontend is set up (`npm ci`, `npm run lint`, `npm run build`).

@@ -1,6 +1,7 @@
 # soulcurve-web (frontend)
 
-React + Vite + TypeScript. Bkz. [ana README](../../README.md) ve [ARCHITECTURE.md](../../docs/ARCHITECTURE.md).
+React + Vite + TypeScript. See the [main README](../../README.md) and
+[ARCHITECTURE.md](../../docs/ARCHITECTURE.md).
 
 ```bash
 npm install

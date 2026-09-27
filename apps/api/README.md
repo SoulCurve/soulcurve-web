@@ -1,6 +1,7 @@
 # soulcurve-api
 
-FastAPI backend. Bkz. [ana README](../../README.md) ve [ARCHITECTURE.md](../../docs/ARCHITECTURE.md).
+FastAPI backend. See the [main README](../../README.md) and
+[ARCHITECTURE.md](../../docs/ARCHITECTURE.md).
 
 ```bash
 uv sync

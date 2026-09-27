@@ -1,14 +1,14 @@
 ---
-name: Hata
-about: Beklenmeyen davranış
+name: Bug
+about: Unexpected behavior
 labels: [bug]
 ---
 
-## Ne oldu
+## What happened
 
-## Ne bekleniyordu
+## What was expected
 
-## Nasıl tekrarlanır
+## How to reproduce
 1.
 
-## Ortam / sürüm
+## Environment / version

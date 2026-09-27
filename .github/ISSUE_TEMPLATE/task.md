@@ -1,17 +1,17 @@
 ---
-name: Görev
-about: Yol haritasındaki bir iş
+name: Task
+about: A roadmap item
 labels: []
 ---
 
-## Amaç
-<!-- Bu iş bittiğinde ne mümkün olacak? -->
+## Goal
+<!-- What becomes possible once this is done? -->
 
-## Kapsam
+## Scope
 - [ ]
 
-## Bitti kriteri
-<!-- Hangi komut / çıktı bunun bittiğini gösterir? -->
+## Done criteria
+<!-- What command / output shows this is done? -->
 
 ## Milestone
-<!-- M0-M5, bkz. ROADMAP.md -->
+<!-- M0-M5, see ROADMAP.md -->

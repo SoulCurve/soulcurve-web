@@ -1,45 +1,47 @@
-# Kararlar
+# Decisions
 
-Kısa karar kaydı. Yeni karar en alta eklenir; eski karar değişirse silinmez, "yerini aldı"
-notu düşülür.
+A short decision log. New decisions are appended at the bottom; if an old decision
+changes, it isn't deleted — a "superseded by" note is added instead.
 
-## D1: İki repo: `soulcurve-web` (monorepo) + `soulcurve-model`
-**Tarih:** 2026-09-27 · **Durum:** kabul
+## D1: Two repos: `soulcurve-web` (monorepo) + `soulcurve-model`
+**Date:** 2026-09-27 · **Status:** accepted
 
-İlk öneri üç repoydu: frontend, backend ve model. İki kişilik, erken aşamadaki bir
-projede frontend ile backend'i ayırmak iki ayrı CI, iki ayrı sürümleme ve repolar arası
-API sözleşmesi senkronizasyonu gerektirir; karşılığında bir fayda sağlamaz. Frontend ve
-backend aynı değişiklikte birlikte değiştiği için tek repoda tutulur.
+The initial proposal was three repos: frontend, backend and model. For a two-person,
+early-stage project, splitting frontend from backend requires two separate CIs, two
+separate versioning schemes, and cross-repo API contract synchronization — with no
+offsetting benefit. Frontend and backend change together in the same change, so they
+stay in one repo.
 
-Model reposu ayrı kalır, çünkü yaşam döngüsü farklıdır: notebook keşfi, büyük yerel veri,
-uzun eğitim süreleri ve web deploy'undan bağımsız sürümleme.
+The model repo stays separate because its lifecycle differs: notebook exploration,
+large local data, long training runs, and versioning independent of the web deploy.
 
 ## D2: Backend: FastAPI (Python)
-**Tarih:** 2026-09-27 · **Durum:** kabul
+**Date:** 2026-09-27 · **Status:** accepted
 
-Model ve özellik kodu Python'da. API de Python olursa özellik hesabı aynı paketten
-çağrılır ve eğitim ile sunum arasında sapma riski ortadan kalkar. FastAPI, OpenAPI
-şemasını otomatik ürettiği için frontend tipleri şemadan üretilebilir.
+The model and feature code are in Python. If the API is also Python, feature
+computation is called from the same package, eliminating the risk of
+training/serving skew. FastAPI auto-generates the OpenAPI schema, so frontend types
+can be generated from it.
 
 ## D3: Frontend: React + Vite (TypeScript)
-**Tarih:** 2026-09-27 · **Durum:** kabul (A itiraz edebilir)
+**Date:** 2026-09-27 · **Status:** accepted (A may object)
 
-Değerlendirilen alternatifler:
-- **Streamlit / Dash:** Faz 1 için en hızlı yol, ama Faz 2'deki ürünün (hesaplar,
-  premium, özel arayüz) temeli olamaz; yeniden yazmak gerekir.
-- **Next.js:** SSR/SEO Faz 1'de gerekmiyor, ek karmaşıklık getirir. Faz 2'de ihtiyaç
-  olursa geçiş yolu açık.
-- **React + Vite:** basit, statik build, FastAPI ile net ayrım. Seçildi.
+Alternatives considered:
+- **Streamlit / Dash:** the fastest path for Phase 1, but can't be the foundation for
+  the Phase 2 product (accounts, premium, custom UI); would need a rewrite.
+- **Next.js:** SSR/SEO isn't needed in Phase 1 and adds complexity. A migration path
+  is open if needed in Phase 2.
+- **React + Vite:** simple, static build, clean separation from FastAPI. Selected.
 
-Grafik kütüphanesi (ör. Recharts, visx, ECharts) A'nın tercihine bırakıldı.
+The charting library (e.g. Recharts, visx, ECharts) was left to A's preference.
 
-## D4: Model dağıtımı: GitHub Release + sürüme sabitlenmiş paket
-**Tarih:** 2026-09-27 · **Durum:** kabul
+## D4: Model distribution: GitHub Release + version-pinned package
+**Date:** 2026-09-27 · **Status:** accepted
 
-Ayrıntılar: soulcurve-model/docs/ARCHITECTURE.md. Model registry (MLflow vb.) Faz 1
-için gereksiz; ihtiyaç doğarsa yeniden değerlendirilecek.
+Details: soulcurve-model/docs/ARCHITECTURE.md. A model registry (MLflow, etc.) is
+unnecessary for Phase 1; will be reconsidered if the need arises.
 
-## Açık kararlar
-- [ ] Deploy platformu (M4 öncesi, sahibi A)
-- [ ] Önbellek katmanı: dosya/SQLite yeterli mi (M4, sahibi A)
-- [ ] Faz 2: kimlik doğrulama ve ödeme sağlayıcısı (Faz 1 kapısından sonra)
+## Open decisions
+- [ ] Deploy platform (before M4, owner: A)
+- [ ] Cache layer: is file/SQLite enough (M4, owner: A)
+- [ ] Phase 2: auth and payment provider (after the Phase 1 gate)
