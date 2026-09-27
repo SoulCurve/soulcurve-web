@@ -47,3 +47,45 @@ export function steamLoginUrl(): string {
 export async function logout(): Promise<void> {
   await fetch(`${API_BASE_URL}/auth/logout`, { method: "POST", credentials: "include" });
 }
+
+export interface HeroStat {
+  hero_id: number;
+  name: string;
+  win_rate: number;
+  pick_rate: number;
+}
+
+export interface HeroStatsResponse {
+  patch: string;
+  heroes: HeroStat[];
+}
+
+export interface ItemStat {
+  item_id: number;
+  name: string;
+  win_rate: number;
+  pick_rate: number;
+}
+
+export interface HeroItemStatsResponse {
+  patch: string;
+  hero_id: number;
+  hero_name: string;
+  items: ItemStat[];
+}
+
+export async function fetchHeroStats(): Promise<HeroStatsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes`);
+  if (!response.ok) {
+    throw new Error(`Failed to load hero stats (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchHeroItemStats(heroId: number): Promise<HeroItemStatsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/items`);
+  if (!response.ok) {
+    throw new Error(`Failed to load item stats (${response.status})`);
+  }
+  return response.json();
+}

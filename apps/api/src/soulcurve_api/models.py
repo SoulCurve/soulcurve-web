@@ -27,3 +27,29 @@ class WinProbabilityResponse(BaseModel):
     points: list[WinProbabilityPoint]
     events: list[MatchEvent]
     winner: Literal["amber", "sapphire"]
+
+
+class HeroStat(BaseModel):
+    hero_id: int
+    name: str
+    win_rate: float
+    pick_rate: float
+
+
+class HeroStatsResponse(BaseModel):
+    patch: str
+    heroes: list[HeroStat]
+
+
+class ItemStat(BaseModel):
+    item_id: int
+    name: str
+    win_rate: float
+    pick_rate: float
+
+
+class HeroItemStatsResponse(BaseModel):
+    patch: str
+    hero_id: int
+    hero_name: str
+    items: list[ItemStat]
