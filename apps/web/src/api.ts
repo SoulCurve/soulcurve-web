@@ -53,6 +53,7 @@ export interface HeroStat {
   name: string;
   win_rate: number;
   pick_rate: number;
+  matches: number;
 }
 
 export interface HeroStatsResponse {
@@ -66,6 +67,7 @@ export interface ItemStat {
   name: string;
   win_rate: number;
   pick_rate: number;
+  matches: number;
 }
 
 export interface HeroItemStatsResponse {

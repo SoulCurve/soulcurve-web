@@ -63,31 +63,31 @@ _MOCK_RANK_SHARES: list[float] = [
 ]
 
 _MOCK_HEROES: list[HeroStat] = [
-    HeroStat(hero_id=1, name="Abrams", win_rate=0.52, pick_rate=0.18),
-    HeroStat(hero_id=2, name="Bebop", win_rate=0.49, pick_rate=0.12),
-    HeroStat(hero_id=3, name="Dynamo", win_rate=0.55, pick_rate=0.21),
-    HeroStat(hero_id=4, name="Grey Talon", win_rate=0.47, pick_rate=0.15),
-    HeroStat(hero_id=5, name="Haze", win_rate=0.51, pick_rate=0.24),
-    HeroStat(hero_id=6, name="Infernus", win_rate=0.48, pick_rate=0.14),
-    HeroStat(hero_id=7, name="Ivy", win_rate=0.53, pick_rate=0.17),
-    HeroStat(hero_id=8, name="Vindicta", win_rate=0.46, pick_rate=0.11),
+    HeroStat(hero_id=1, name="Abrams", win_rate=0.52, pick_rate=0.18, matches=9000),
+    HeroStat(hero_id=2, name="Bebop", win_rate=0.49, pick_rate=0.12, matches=6000),
+    HeroStat(hero_id=3, name="Dynamo", win_rate=0.55, pick_rate=0.21, matches=10500),
+    HeroStat(hero_id=4, name="Grey Talon", win_rate=0.47, pick_rate=0.15, matches=7500),
+    HeroStat(hero_id=5, name="Haze", win_rate=0.51, pick_rate=0.24, matches=12000),
+    HeroStat(hero_id=6, name="Infernus", win_rate=0.48, pick_rate=0.14, matches=7000),
+    HeroStat(hero_id=7, name="Ivy", win_rate=0.53, pick_rate=0.17, matches=8500),
+    HeroStat(hero_id=8, name="Vindicta", win_rate=0.46, pick_rate=0.11, matches=5500),
 ]
 
 
 _MOCK_ITEMS: list[ItemStat] = [
-    ItemStat(item_id=200 + i, name=name, win_rate=win_rate, pick_rate=pick_rate)
-    for i, (name, win_rate, pick_rate) in enumerate(
+    ItemStat(item_id=200 + i, name=name, win_rate=win_rate, pick_rate=pick_rate, matches=matches)
+    for i, (name, win_rate, pick_rate, matches) in enumerate(
         [
-            ("Extra Health", 0.54, 0.62),
-            ("Extra Stamina", 0.50, 0.41),
-            ("Extended Magazine", 0.49, 0.55),
-            ("Sprint Boots", 0.53, 0.38),
-            ("Melee Lifesteal", 0.47, 0.22),
-            ("Extra Regen", 0.51, 0.29),
-            ("Restorative Shot", 0.56, 0.19),
-            ("Mystic Shot", 0.45, 0.16),
-            ("Healing Rite", 0.52, 0.33),
-            ("Spirit Strike", 0.48, 0.14),
+            ("Extra Health", 0.54, 0.62, 31000),
+            ("Extra Stamina", 0.50, 0.41, 20500),
+            ("Extended Magazine", 0.49, 0.55, 27500),
+            ("Sprint Boots", 0.53, 0.38, 19000),
+            ("Melee Lifesteal", 0.47, 0.22, 11000),
+            ("Extra Regen", 0.51, 0.29, 14500),
+            ("Restorative Shot", 0.56, 0.19, 9500),
+            ("Mystic Shot", 0.45, 0.16, 8000),
+            ("Healing Rite", 0.52, 0.33, 16500),
+            ("Spirit Strike", 0.48, 0.14, 7000),
         ]
     )
 ]
@@ -128,6 +128,7 @@ async def hero_stats(rank: str | None = None) -> HeroStatsResponse:
             name=hero_names[row["hero_id"]],
             win_rate=round(row["wins"] / row["matches"], 3),
             pick_rate=round(row["matches"] / total_matches, 3),
+            matches=row["matches"],
         )
         for row in raw_stats
         if row["hero_id"] in hero_names and row["matches"] > 0
@@ -206,6 +207,7 @@ async def hero_item_stats(hero_id: int, rank: str | None = None) -> HeroItemStat
             name=item_names[row["item_id"]],
             win_rate=round(row["wins"] / row["matches"], 3),
             pick_rate=round(min(1.0, row["matches"] / hero_matches), 3),
+            matches=row["matches"],
         )
         for row in item_rows
         if row["item_id"] in item_names and row["matches"] > 0 and hero_matches

@@ -175,14 +175,29 @@ const TIERS = [
   { key: "D", label: "D Tier", min: 0, className: "border-bad/30 bg-bad/10 text-bad" },
 ] as const;
 
-function tierFor(winRate: number) {
-  return TIERS.find((tier) => winRate >= tier.min) ?? TIERS[TIERS.length - 1];
+// 95% Wilson score lower bound: a hero with few matches shouldn't out-rank one with
+// thousands at the same raw win rate, since a small sample's true rate is far less certain.
+function wilsonLowerBound(winRate: number, matches: number) {
+  if (matches === 0) return 0;
+  const z = 1.96;
+  const denom = 1 + (z * z) / matches;
+  const center = winRate + (z * z) / (2 * matches);
+  const margin = z * Math.sqrt((winRate * (1 - winRate)) / matches + (z * z) / (4 * matches * matches));
+  return (center - margin) / denom;
+}
+
+function tierFor(confidence: number) {
+  return TIERS.find((tier) => confidence >= tier.min) ?? TIERS[TIERS.length - 1];
 }
 
 function TierList({ heroes }: { heroes: HeroStat[] }) {
+  const withConfidence = heroes.map((h) => ({ hero: h, confidence: wilsonLowerBound(h.win_rate, h.matches) }));
   const byTier = TIERS.map((tier) => ({
     tier,
-    heroes: heroes.filter((h) => tierFor(h.win_rate).key === tier.key).sort((a, b) => b.win_rate - a.win_rate),
+    heroes: withConfidence
+      .filter((h) => tierFor(h.confidence).key === tier.key)
+      .sort((a, b) => b.confidence - a.confidence)
+      .map((h) => h.hero),
   })).filter((group) => group.heroes.length > 0);
 
   return (

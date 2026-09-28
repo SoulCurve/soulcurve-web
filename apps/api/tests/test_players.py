@@ -71,3 +71,10 @@ def test_player_profile_shape(deadlock_api):
     # deterministic given the same (mocked) rank data
     again = client.get(f"/api/players/{STEAM_ID}/profile").json()
     assert body == again
+
+
+def test_player_profile_percentile_uses_rank_distribution(deadlock_api):
+    # badge=93 (mocked) -> tier 9 (Phantom), subrank 3. Percentile must come from the
+    # cumulative rank distribution, not a flat badge/max_badge ratio (which would give 0.802).
+    body = client.get(f"/api/players/{STEAM_ID}/profile").json()
+    assert body["skill_percentile"] == 0.918
