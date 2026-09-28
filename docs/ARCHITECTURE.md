@@ -89,8 +89,9 @@ both sides in sync in the same repo.
 3. **Match analysis (`/match/:matchId/analysis`):** per-player mistake score (0–10) and
    the WPA-flagged moments behind it — meant to keep growing with more cards/widgets
    over time, not a finished single-purpose page (see `docs/DECISIONS.md`).
-4. **Player (`/player/:steamId`):** recent match history list, each row linking to
-   that match's analysis.
+4. **Player (`/player/:steamId`):** hero pool (games/win rate per hero, derived
+   client-side from the match history) and a recent match history list, each row
+   linking to that match's analysis.
 5. **Stats (`/stats`):** hero win/pick rates (filterable by rank) with the item
    breakdown for the selected hero, plus a win-rate-derived S/A/B/C/D tier list.
 6. **Builds (`/builds`):** top-player item builds per hero, ranked by win rate.

@@ -1,14 +1,40 @@
 import { Link, useParams } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { fetchPlayerMatches } from "@/api";
+import type { MatchSummary } from "@/api";
+import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
 import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
 import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 
+interface HeroPoolEntry {
+  hero_id: number;
+  hero_name: string;
+  games: number;
+  wins: number;
+}
+
+function heroPool(matches: MatchSummary[]): HeroPoolEntry[] {
+  const byHero = new Map<number, HeroPoolEntry>();
+  for (const match of matches) {
+    const entry = byHero.get(match.hero_id) ?? {
+      hero_id: match.hero_id,
+      hero_name: match.hero_name,
+      games: 0,
+      wins: 0,
+    };
+    entry.games += 1;
+    entry.wins += match.result === "win" ? 1 : 0;
+    byHero.set(match.hero_id, entry);
+  }
+  return [...byHero.values()].sort((a, b) => b.games - a.games);
+}
+
 function PlayerPage() {
   const { steamId = "" } = useParams<{ steamId: string }>();
   const matches = useAsync(() => fetchPlayerMatches(steamId), `player-matches-${steamId}`);
+  const pool = matches.data ? heroPool(matches.data.matches) : [];
 
   return (
     <PageShell>
@@ -22,6 +48,27 @@ function PlayerPage() {
       <PageHeader title={<span translate="no">Player {steamId}</span>} />
 
       {matches.error && <ErrorState message={`${matches.error}. Check the Steam ID and try again.`} />}
+
+      {pool.length > 0 && (
+        <Section title="Hero Pool" description="Heroes played in the last 10 matches">
+          <ul className="flex flex-wrap gap-3">
+            {pool.map((entry) => (
+              <li
+                key={entry.hero_id}
+                className="flex items-center gap-2.5 rounded-lg border bg-card px-3 py-2 text-sm"
+              >
+                <GameIcon name={entry.hero_name} kind="hero" />
+                <span className="flex flex-col">
+                  <span>{entry.hero_name}</span>
+                  <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                    {entry.games} {entry.games === 1 ? "game" : "games"} · {percent(entry.wins / entry.games)} WR
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       <Section title="Recent Matches">
         {!matches.data && !matches.error && <LoadingState label="Loading match history…" variant="rows" />}
