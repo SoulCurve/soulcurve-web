@@ -23,7 +23,7 @@ from soulcurve_api.models import (
     PlayerProfileResponse,
     PlayerTendency,
 )
-from soulcurve_api.stats import RANKS
+from soulcurve_api.stats import _MOCK_RANK_SHARES, RANKS
 
 router = APIRouter()
 
@@ -183,6 +183,20 @@ def _letter(score: float) -> str:
 MAX_BADGE = 116  # highest tier (Eternus=11) * 10 + highest subrank (6)
 
 
+def _percentile(badge: int) -> float:
+    """Share of players at or below this badge.
+
+    Ranks aren't uniformly populated (see _MOCK_RANK_SHARES: a bell curve
+    clustered in the middle tiers), so badge/MAX_BADGE isn't a percentile -
+    it has to come from the cumulative rank distribution instead.
+    """
+    tier, subrank = divmod(min(badge, MAX_BADGE), 10)
+    tier = min(tier, len(_MOCK_RANK_SHARES) - 1)
+    below_tier = sum(_MOCK_RANK_SHARES[:tier])
+    within_tier = _MOCK_RANK_SHARES[tier] * min(subrank, 9) / 10
+    return round(min(0.999, below_tier + within_tier), 3)
+
+
 @router.get("/api/players/{steam_id}/profile")
 async def player_profile(steam_id: str) -> PlayerProfileResponse:
     try:
@@ -194,7 +208,7 @@ async def player_profile(steam_id: str) -> PlayerProfileResponse:
 
     badge = rank_data.get("badge") or 0
     rating = 1000 + badge * 30
-    percentile = round(min(0.999, badge / MAX_BADGE), 3)
+    percentile = _percentile(badge)
 
     # Grades lean on the rating so a top player doesn't show a wall of Ds, plus per-category noise.
     grades = []

@@ -34,6 +34,7 @@ class HeroStat(BaseModel):
     name: str
     win_rate: float
     pick_rate: float
+    matches: int
 
 
 class HeroStatsResponse(BaseModel):
@@ -47,6 +48,7 @@ class ItemStat(BaseModel):
     name: str
     win_rate: float
     pick_rate: float
+    matches: int
 
 
 class HeroItemStatsResponse(BaseModel):
