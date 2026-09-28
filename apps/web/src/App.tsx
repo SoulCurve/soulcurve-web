@@ -2,6 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import Backdrop from "@/components/site/Backdrop";
 import SiteHeader from "@/components/site/SiteHeader";
 import AnalysisPage from "@/pages/AnalysisPage";
+import BlogPage from "@/pages/BlogPage";
+import BlogPostPage from "@/pages/BlogPostPage";
 import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
@@ -31,6 +33,8 @@ function App() {
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/builds" element={<BuildsPage />} />
           <Route path="/model" element={<ModelPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>

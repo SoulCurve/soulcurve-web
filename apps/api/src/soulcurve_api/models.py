@@ -136,3 +136,19 @@ class NewsItem(BaseModel):
 
 class NewsResponse(BaseModel):
     items: list[NewsItem]
+
+
+class BlogPostSummary(BaseModel):
+    slug: str
+    title: str
+    date: str
+    author: str
+    excerpt: str
+
+
+class BlogPost(BlogPostSummary):
+    body: str
+
+
+class BlogListResponse(BaseModel):
+    posts: list[BlogPostSummary]

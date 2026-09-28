@@ -36,6 +36,8 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
 | `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
 | `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |
+| `GET /api/blog` | Blog post list (summaries, no body) |
+| `GET /api/blog/{slug}` | A single blog post, full body |
 | `GET /api/news` | News / patch-notes feed |
 | `GET /api/me`, `GET /auth/steam/login`, `POST /auth/logout` | Steam OpenID session |
 
@@ -95,7 +97,10 @@ both sides in sync in the same repo.
 7. **Model (`/model`):** transparency page — model version, algorithm, accuracy/AUC-ROC/log
    loss metrics, and the input features it looks at. All values are placeholders until
    the real model lands in M4; linked from the home page and the main nav.
-8. **News (`/news`) and FAQ (`/faq`).**
+8. **Blog (`/blog` list, `/blog/:slug` detail):** long-form posts explaining how SoulCurve
+   works (mistake scoring, the tier list, why the site launched on mock data); linked
+   from the main nav.
+9. **News (`/news`) and FAQ (`/faq`).**
 
 ## Environment variables
 

@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from soulcurve_api import __version__
 from soulcurve_api.analysis import router as analysis_router
 from soulcurve_api.auth import router as auth_router
+from soulcurve_api.blog import router as blog_router
 from soulcurve_api.builds import router as builds_router
 from soulcurve_api.model_info import router as model_info_router
 from soulcurve_api.models import MatchEvent, WinProbabilityPoint, WinProbabilityResponse
@@ -38,6 +39,7 @@ app.include_router(news_router)
 app.include_router(players_router)
 app.include_router(builds_router)
 app.include_router(model_info_router)
+app.include_router(blog_router)
 
 
 @app.get("/health")

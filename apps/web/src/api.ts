@@ -229,3 +229,35 @@ export async function fetchNews(): Promise<NewsResponse> {
   }
   return response.json();
 }
+
+export interface BlogPostSummary {
+  slug: string;
+  title: string;
+  date: string;
+  author: string;
+  excerpt: string;
+}
+
+export interface BlogPost extends BlogPostSummary {
+  body: string;
+}
+
+export interface BlogListResponse {
+  posts: BlogPostSummary[];
+}
+
+export async function fetchBlogList(): Promise<BlogListResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/blog`);
+  if (!response.ok) {
+    throw new Error(`Failed to load blog posts (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchBlogPost(slug: string): Promise<BlogPost> {
+  const response = await fetch(`${API_BASE_URL}/api/blog/${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    throw new Error(`Post not found (${response.status})`);
+  }
+  return response.json();
+}
