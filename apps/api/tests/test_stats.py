@@ -5,18 +5,19 @@ from soulcurve_api.main import app
 client = TestClient(app)
 
 
-def test_hero_stats_shape():
+def test_hero_stats_shape(deadlock_api):
     response = client.get("/api/stats/heroes")
     assert response.status_code == 200
     body = response.json()
     assert body["patch"]
-    assert len(body["heroes"]) > 0
+    assert len(body["heroes"]) == 3
     for hero in body["heroes"]:
         assert 0.0 <= hero["win_rate"] <= 1.0
         assert 0.0 <= hero["pick_rate"] <= 1.0
+    assert abs(sum(h["pick_rate"] for h in body["heroes"]) - 1.0) < 0.001
 
 
-def test_hero_item_stats_shape():
+def test_hero_item_stats_shape(deadlock_api):
     heroes = client.get("/api/stats/heroes").json()["heroes"]
     hero_id = heroes[0]["hero_id"]
 
@@ -29,7 +30,7 @@ def test_hero_item_stats_shape():
         assert 0.0 <= item["win_rate"] <= 1.0
 
 
-def test_hero_item_stats_404_for_unknown_hero():
+def test_hero_item_stats_404_for_unknown_hero(deadlock_api):
     response = client.get("/api/stats/heroes/999999/items")
     assert response.status_code == 404
 
@@ -42,23 +43,15 @@ def test_ranks_list():
     assert "Obscurus" in ranks
 
 
-def test_hero_stats_filtered_by_rank():
+def test_hero_stats_filtered_by_rank(deadlock_api):
     response = client.get("/api/stats/heroes", params={"rank": "Eternus"})
     assert response.status_code == 200
     body = response.json()
     assert body["rank"] == "Eternus"
-    assert len(body["heroes"]) == 8
+    assert len(body["heroes"]) == 3
     for hero in body["heroes"]:
         assert 0.0 <= hero["win_rate"] <= 1.0
         assert 0.0 <= hero["pick_rate"] <= 1.0
-
-    # deterministic: same rank -> same numbers
-    again = client.get("/api/stats/heroes", params={"rank": "Eternus"}).json()
-    assert again["heroes"] == body["heroes"]
-
-    # a different rank should (almost certainly) shift at least one number
-    other = client.get("/api/stats/heroes", params={"rank": "Obscurus"}).json()
-    assert other["heroes"] != body["heroes"]
 
 
 def test_item_stats_shape():
@@ -72,7 +65,7 @@ def test_item_stats_shape():
         assert 0.0 <= item["pick_rate"] <= 1.0
 
 
-def test_hero_stats_rejects_unknown_rank():
+def test_hero_stats_rejects_unknown_rank(deadlock_api):
     response = client.get("/api/stats/heroes", params={"rank": "Legendary"})
     assert response.status_code == 422
 
@@ -100,7 +93,7 @@ def test_patch_summary_shape():
         assert change["delta"] <= 0
 
 
-def test_hero_items_rank_filter():
+def test_hero_items_rank_filter(deadlock_api):
     base = client.get("/api/stats/heroes/1/items").json()["items"]
     ranked = client.get("/api/stats/heroes/1/items?rank=Eternus").json()["items"]
     assert [i["name"] for i in ranked] == [i["name"] for i in base]

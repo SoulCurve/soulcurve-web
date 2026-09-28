@@ -5,7 +5,7 @@ from soulcurve_api.main import app
 client = TestClient(app)
 
 
-def test_hero_builds_shape():
+def test_hero_builds_shape(deadlock_api):
     response = client.get("/api/stats/heroes/1/builds")
     assert response.status_code == 200
     body = response.json()
@@ -20,25 +20,25 @@ def test_hero_builds_shape():
     assert win_rates == sorted(win_rates, reverse=True)
 
 
-def test_hero_builds_404_for_unknown_hero():
+def test_hero_builds_404_for_unknown_hero(deadlock_api):
     response = client.get("/api/stats/heroes/999999/builds")
     assert response.status_code == 404
 
 
-def test_hero_builds_deterministic():
+def test_hero_builds_deterministic(deadlock_api):
     first = client.get("/api/stats/heroes/2/builds").json()
     again = client.get("/api/stats/heroes/2/builds").json()
     assert first == again
 
 
-def test_build_authors_are_leaderboard_players():
+def test_build_authors_are_leaderboard_players(deadlock_api):
     names = {p["name"] for p in client.get("/api/leaderboard").json()["players"]}
     authors = [b["author"] for b in client.get("/api/stats/heroes/1/builds").json()["builds"]]
     assert set(authors) <= names
     assert len(set(authors)) == len(authors)
 
 
-def test_hero_builds_rank_filter():
+def test_hero_builds_rank_filter(deadlock_api):
     base = client.get("/api/stats/heroes/1/builds").json()
     ranked = client.get("/api/stats/heroes/1/builds", params={"rank": "Eternus"}).json()
     assert ranked["rank"] == "Eternus"

@@ -16,11 +16,12 @@
 
 ## Current status (2026-09-28)
 
-Every endpoint below is implemented and live, but **all of them return fixed/deterministic
-mock data** (no live deadlock-api or model calls yet) — this is Phase 1, building the full
-site shape against a stable contract before M4 wires up real data. Mock data is either
-static or seeded deterministically (e.g. by steam_id or rank) so it looks plausible and is
-stable across reloads, per `docs/DECISIONS.md` D2–D4.
+Every endpoint below is implemented and live. Real deadlock-api.com data integration has
+started: `/api/stats/heroes` (and the hero identity used by `/items` and `/builds`) is now
+live, sourced from `/v1/analytics/hero-stats` and `/v1/assets/heroes`, with rank filtering
+via badge tier. Everything else still returns fixed/deterministic mock data — either static
+or seeded deterministically (e.g. by steam_id or rank) so it looks plausible and is stable
+across reloads, per `docs/DECISIONS.md` D2–D4 — pending further integration.
 
 ## API contract
 
@@ -36,10 +37,10 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration), plus their name when they're on the leaderboard |
 | `GET /api/players/{steam_id}/profile` | Skill rating/percentile, per-category (Laning/Farming/Teamfighting/Objectives) letter grades, and strength/weakness tendencies |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |
-| `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank |
-| `GET /api/stats/heroes/{hero_id}/items?rank=` | Item win/pick rates for a specific hero, optionally filtered by rank |
+| `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank — **live**, from deadlock-api |
+| `GET /api/stats/heroes/{hero_id}/items?rank=` | Item win/pick rates for a specific hero, optionally filtered by rank (hero identity live, item numbers still mock) |
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
-| `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
+| `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate (hero identity live, builds still mock) |
 | `GET /api/stats/patch-summary` | Biggest hero win-rate winners/losers vs. the previous patch |
 | `GET /api/stats/rank-distribution` | Share of players at each of the 12 ranked tiers |
 | `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |

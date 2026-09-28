@@ -7,11 +7,13 @@ overall item pool in stats.py.
 
 import hashlib
 
+import httpx
 from fastapi import APIRouter, HTTPException
 
+from soulcurve_api import deadlock_client
 from soulcurve_api.models import Build, HeroBuildsResponse
 from soulcurve_api.players import _LEADERBOARD_NAMES
-from soulcurve_api.stats import _MOCK_HEROES, _MOCK_ITEMS, MOCK_PATCH, RANKS
+from soulcurve_api.stats import _MOCK_ITEMS, MOCK_PATCH, RANKS
 
 router = APIRouter()
 
@@ -46,16 +48,20 @@ def _mock_builds(hero_id: int, rank: str | None) -> list[Build]:
 
 
 @router.get("/api/stats/heroes/{hero_id}/builds")
-def hero_builds(hero_id: int, rank: str | None = None) -> HeroBuildsResponse:
-    hero = next((h for h in _MOCK_HEROES if h.hero_id == hero_id), None)
-    if hero is None:
-        raise HTTPException(status_code=404, detail="Hero not found")
+async def hero_builds(hero_id: int, rank: str | None = None) -> HeroBuildsResponse:
     if rank is not None and rank not in RANKS:
         raise HTTPException(status_code=422, detail="Unknown rank")
+    try:
+        hero_names = await deadlock_client.fetch_heroes()
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+    hero_name = hero_names.get(hero_id)
+    if hero_name is None:
+        raise HTTPException(status_code=404, detail="Hero not found")
     return HeroBuildsResponse(
         patch=MOCK_PATCH,
-        hero_id=hero.hero_id,
-        hero_name=hero.name,
+        hero_id=hero_id,
+        hero_name=hero_name,
         rank=rank,
         builds=_mock_builds(hero_id, rank),
     )
