@@ -1,8 +1,11 @@
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Pause, Play, RotateCcw } from "lucide-react";
 import {
   Area,
   AreaChart,
   CartesianGrid,
+  ReferenceArea,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
@@ -15,7 +18,58 @@ import { CHART, axisProps, interpolate, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import MatchHeader from "@/components/site/MatchHeader";
 import { ErrorState, LoadingState, PageShell, Section, Stat, TeamLabel } from "@/components/site/primitives";
+import { Button } from "@/components/ui/button";
 import { useAsync } from "@/lib/useAsync";
+import { cn } from "@/lib/utils";
+
+// A full match replays in roughly 12 seconds regardless of its length.
+const REPLAY_SECONDS = 12;
+const TICK_MS = 50;
+
+function clock(tMin: number) {
+  const total = Math.round(tMin * 60);
+  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
+}
+
+function useReplay(duration: number) {
+  // null = showing the finished match; a number = replay position in minutes.
+  const [position, setT] = useState<number | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const t = position ?? duration;
+
+  useEffect(() => {
+    if (!playing) return;
+    const step = duration / ((REPLAY_SECONDS * 1000) / TICK_MS);
+    const id = window.setInterval(() => {
+      setT((prev) => {
+        const next = Math.min(duration, (prev ?? 0) + step);
+        if (next >= duration) {
+          setPlaying(false);
+          return null;
+        }
+        return next;
+      });
+    }, TICK_MS);
+    return () => window.clearInterval(id);
+  }, [playing, duration]);
+
+  return {
+    t,
+    playing,
+    toggle: () => {
+      if (!playing && t >= duration) setT(0);
+      setPlaying(!playing);
+    },
+    restart: () => {
+      setT(0);
+      setPlaying(true);
+    },
+    seek: (next: number) => {
+      setPlaying(false);
+      setT(next >= duration ? null : next);
+    },
+  };
+}
 
 function MatchPage() {
   const { matchId = "" } = useParams<{ matchId: string }>();
@@ -23,6 +77,11 @@ function MatchPage() {
 
   const pWins = data?.points.map((p) => p.p_win) ?? [];
   const last = data?.points[data.points.length - 1];
+  const duration = last?.t_min ?? 0;
+  const replay = useReplay(duration);
+  const replaying = replay.t < duration;
+  const pNow = data ? interpolate(data.points, replay.t) : 0;
+  const lastEvent = data?.events.filter((e) => e.t_min <= replay.t).at(-1);
 
   return (
     <PageShell>
@@ -64,10 +123,18 @@ function MatchPage() {
                       y={interpolate(data.points, event.t_min)}
                       r={4}
                       fill={event.team === "amber" ? "var(--amber)" : "var(--sapphire)"}
+                      fillOpacity={event.t_min <= replay.t ? 1 : 0.25}
                       stroke={CHART.surface}
                       strokeWidth={2}
                     />
                   ))}
+                  {replaying && (
+                    <>
+                      <ReferenceArea x1={replay.t} x2={duration} fill={CHART.surface} fillOpacity={0.7} />
+                      <ReferenceLine x={replay.t} stroke={CHART.mark} />
+                      <ReferenceDot x={replay.t} y={pNow} r={5} fill={CHART.mark} stroke={CHART.surface} strokeWidth={2} />
+                    </>
+                  )}
                   <Tooltip
                     cursor={{ stroke: CHART.axis, strokeDasharray: "3 3" }}
                     content={({ active, payload, label }) =>
@@ -99,6 +166,41 @@ function MatchPage() {
               <TeamLabel team="amber" />
               <TeamLabel team="sapphire" />
             </p>
+
+            <div className="mt-5 flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  size="icon"
+                  onClick={replay.toggle}
+                  aria-label={replay.playing ? "Pause replay" : "Play replay"}
+                >
+                  {replay.playing ? <Pause /> : <Play />}
+                </Button>
+                <Button size="icon" variant="outline" onClick={replay.restart} aria-label="Restart replay">
+                  <RotateCcw />
+                </Button>
+                <span className="font-mono text-sm whitespace-nowrap tabular-nums">
+                  {clock(replay.t)}
+                  <span className="text-muted-foreground"> / {clock(duration)}</span>
+                </span>
+              </div>
+              <input
+                type="range"
+                aria-label="Match time"
+                min={0}
+                max={duration}
+                step={0.1}
+                value={replay.t}
+                onChange={(e) => replay.seek(Number(e.target.value))}
+                className="h-1.5 flex-1 cursor-pointer accent-soul"
+              />
+              <div className="flex items-baseline gap-2 sm:w-56 sm:justify-end">
+                <span className="font-mono text-lg text-foreground tabular-nums">{percent(pNow)}</span>
+                <span className="truncate text-xs text-muted-foreground">
+                  {lastEvent ? `after ${lastEvent.detail} (${lastEvent.team})` : "to win"}
+                </span>
+              </div>
+            </div>
           </Section>
 
           <Section title="Objectives">
@@ -106,7 +208,11 @@ function MatchPage() {
               {data.events.map((event) => (
                 <li
                   key={`${event.t_min}-${event.detail}-${event.team}`}
-                  className="grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 py-3 text-sm first:pt-0 last:pb-0"
+                  className={cn(
+                    "grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 py-3 text-sm transition-opacity first:pt-0 last:pb-0",
+                    event.t_min > replay.t && "opacity-35",
+                    event === lastEvent && replaying && "text-soul",
+                  )}
                 >
                   <span className="font-mono text-muted-foreground tabular-nums">{event.t_min}m</span>
                   <span>{event.detail}</span>

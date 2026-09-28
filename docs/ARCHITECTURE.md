@@ -87,7 +87,10 @@ both sides in sync in the same repo.
 1. **Home (`/`):** player/match search bar, Steam sign-in, top heroes, top items,
    latest news/patch notes.
 2. **Match (`/match/:matchId`):** win-probability curve (0–100%, 50% reference line),
-   objective events on the timeline, result and model version.
+   objective events on the timeline, result and model version. A replay bar (play/pause,
+   restart, scrubber) steps through the match: the chart dims the future, and the win
+   chance and objectives list update to the current moment. Client-side only, built on
+   the win-probability response.
 3. **Match analysis (`/match/:matchId/analysis`):** per-player mistake score (0–10) and
    the WPA-flagged moments behind it — meant to keep growing with more cards/widgets
    over time, not a finished single-purpose page (see `docs/DECISIONS.md`).
