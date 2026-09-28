@@ -13,6 +13,7 @@ import {
 } from "@/api";
 import { CHART, percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
+import OneBitDitherDemo from "@/components/lab/OneBitDitherDemo";
 import { PageShell, Section } from "@/components/site/primitives";
 import { buttonVariants } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -176,14 +177,17 @@ function HomePage() {
 
   return (
     <PageShell>
-      <section className="flex flex-col items-center gap-5 py-10 text-center sm:py-20">
-        <h1 className="text-3xl font-semibold text-balance sm:text-4xl">
+      <section className="relative flex flex-col items-center gap-5 overflow-hidden py-10 text-center sm:py-20">
+        <div className="pointer-events-none absolute inset-0 opacity-10" aria-hidden="true">
+          <OneBitDitherDemo cell={6} className="h-full" />
+        </div>
+        <h1 className="relative text-3xl font-semibold text-balance sm:text-4xl">
           Every match has a <span className="text-soul">turning point</span>.
         </h1>
-        <p className="max-w-lg text-pretty text-muted-foreground">
+        <p className="relative max-w-lg text-pretty text-muted-foreground">
           See how your team&rsquo;s win probability moved minute by minute, and which of your plays cost the most.
         </p>
-        <div className="mt-3 flex w-full justify-center">
+        <div className="relative mt-3 flex w-full justify-center">
           <SearchBar />
         </div>
       </section>
