@@ -47,7 +47,10 @@ def _mock_matches(steam_id: str) -> list[MatchSummary]:
 
 @router.get("/api/players/{steam_id}/matches")
 def player_matches(steam_id: str) -> PlayerMatchesResponse:
-    return PlayerMatchesResponse(steam_id=steam_id, matches=_mock_matches(steam_id))
+    names = {p.steam_id: p.name for p in leaderboard().players}
+    return PlayerMatchesResponse(
+        steam_id=steam_id, name=names.get(steam_id), matches=_mock_matches(steam_id)
+    )
 
 
 LEADERBOARD_SIZE = 10
