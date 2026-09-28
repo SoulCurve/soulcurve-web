@@ -13,10 +13,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { fetchWinProbability } from "@/api";
+import { fetchMatchMap, fetchWinProbability } from "@/api";
 import { CHART, axisProps, interpolate, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import MatchHeader from "@/components/site/MatchHeader";
+import MatchMap from "@/components/site/MatchMap";
 import { ErrorState, LoadingState, PageShell, Section, Stat, TeamLabel } from "@/components/site/primitives";
 import { Button } from "@/components/ui/button";
 import { useAsync } from "@/lib/useAsync";
@@ -74,6 +75,7 @@ function useReplay(duration: number) {
 function MatchPage() {
   const { matchId = "" } = useParams<{ matchId: string }>();
   const { data, error } = useAsync(() => fetchWinProbability(matchId), `wp-${matchId}`);
+  const map = useAsync(() => fetchMatchMap(matchId), `map-${matchId}`);
 
   const pWins = data?.points.map((p) => p.p_win) ?? [];
   const last = data?.points[data.points.length - 1];
@@ -203,26 +205,37 @@ function MatchPage() {
             </div>
           </Section>
 
-          <Section title="Objectives">
-            <ol className="flex flex-col divide-y">
-              {data.events.map((event) => (
-                <li
-                  key={`${event.t_min}-${event.detail}-${event.team}`}
-                  className={cn(
-                    "grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 py-3 text-sm transition-opacity first:pt-0 last:pb-0",
-                    event.t_min > replay.t && "opacity-35",
-                    event === lastEvent && replaying && "text-soul",
-                  )}
-                >
-                  <span className="font-mono text-muted-foreground tabular-nums">{event.t_min}m</span>
-                  <span>{event.detail}</span>
-                  <span className="text-muted-foreground">
-                    <TeamLabel team={event.team} />
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </Section>
+          <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
+            <Section
+              title="Match Map"
+              description="Schematic map, follows the replay above · drag to rotate"
+            >
+              {map.error && <ErrorState message={map.error} />}
+              {!map.data && !map.error && <LoadingState label="Loading map…" variant="rows" />}
+              {map.data && <MatchMap map={map.data} t={replay.t} />}
+            </Section>
+
+            <Section title="Objectives">
+              <ol className="flex flex-col divide-y">
+                {data.events.map((event) => (
+                  <li
+                    key={`${event.t_min}-${event.detail}-${event.team}`}
+                    className={cn(
+                      "grid grid-cols-[3.5rem_1fr_auto] items-center gap-3 py-3 text-sm transition-opacity first:pt-0 last:pb-0",
+                      event.t_min > replay.t && "opacity-35",
+                      event === lastEvent && replaying && "text-soul",
+                    )}
+                  >
+                    <span className="font-mono text-muted-foreground tabular-nums">{event.t_min}m</span>
+                    <span>{event.detail}</span>
+                    <span className="text-muted-foreground">
+                      <TeamLabel team={event.team} />
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </Section>
+          </div>
         </>
       )}
     </PageShell>

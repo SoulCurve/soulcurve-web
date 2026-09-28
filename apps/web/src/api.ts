@@ -354,3 +354,33 @@ export async function fetchTournament(slug: string): Promise<Tournament> {
   }
   return response.json();
 }
+
+export interface MapKill {
+  t_min: number;
+  x: number;
+  y: number;
+  team: "amber" | "sapphire";
+}
+
+export interface MapObjective {
+  name: string;
+  lane: "left" | "middle" | "right";
+  owner: "amber" | "sapphire";
+  x: number;
+  y: number;
+  destroyed_at: number | null;
+}
+
+export interface MatchMapResponse {
+  match_id: number;
+  kills: MapKill[];
+  objectives: MapObjective[];
+}
+
+export async function fetchMatchMap(matchId: string): Promise<MatchMapResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/matches/${encodeURIComponent(matchId)}/map`);
+  if (!response.ok) {
+    throw new Error(`Failed to load match map (${response.status})`);
+  }
+  return response.json();
+}

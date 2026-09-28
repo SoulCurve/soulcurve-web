@@ -178,6 +178,28 @@ class RankDistributionResponse(BaseModel):
     ranks: list[RankShare]
 
 
+class MapKill(BaseModel):
+    t_min: float
+    x: float
+    y: float
+    team: Literal["amber", "sapphire"]
+
+
+class MapObjective(BaseModel):
+    name: str
+    lane: Literal["left", "middle", "right"]
+    owner: Literal["amber", "sapphire"]
+    x: float
+    y: float
+    destroyed_at: float | None
+
+
+class MatchMapResponse(BaseModel):
+    match_id: int
+    kills: list[MapKill]
+    objectives: list[MapObjective]
+
+
 class TournamentSummary(BaseModel):
     slug: str
     name: str

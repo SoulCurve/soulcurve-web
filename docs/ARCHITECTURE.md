@@ -28,6 +28,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 |---|---|
 | `GET /health` | Liveness + API version |
 | `GET /api/matches/{match_id}/win-probability` | The match's win-probability time series |
+| `GET /api/matches/{match_id}/map` | Kill positions and objective states on a schematic map (normalized 0–1 coords) |
 | `GET /api/matches/{match_id}/analysis` | Per-player WPA-style mistake analysis (0–10 score + flagged moments) |
 | `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration) |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |
@@ -92,7 +93,9 @@ both sides in sync in the same repo.
    objective events on the timeline, result and model version. A replay bar (play/pause,
    restart, scrubber) steps through the match: the chart dims the future, and the win
    chance and objectives list update to the current moment. Client-side only, built on
-   the win-probability response.
+   the win-probability response. Below it, a schematic match map (CSS 3D, drag to rotate,
+   top-down toggle) shows kills and fallen objectives up to the replay's current moment.
+   Kill positions are seeded mock data; deadlock-api has real position data for M4.
 3. **Match analysis (`/match/:matchId/analysis`):** per-player mistake score (0–10) and
    the WPA-flagged moments behind it — meant to keep growing with more cards/widgets
    over time, not a finished single-purpose page (see `docs/DECISIONS.md`).
