@@ -34,8 +34,8 @@ across reloads, per `docs/DECISIONS.md` D2–D4 — pending further integration.
 | `GET /api/matches/{match_id}/analysis` | Per-player WPA-style mistake analysis (0–10 score + flagged moments) |
 | `GET /api/map/box-routes` | Breakable crate positions/timers and each team's optimal crate loop (exact shortest base-to-base order) vs. the greedy nearest-crate loop |
 | `GET /api/leaderboard` | Top-rated players (mock, fictional handles until M4) |
-| `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration), plus their name when they're on the leaderboard |
-| `GET /api/players/{steam_id}/profile` | Skill rating/percentile, per-category (Laning/Farming/Teamfighting/Objectives) letter grades, and strength/weakness tendencies |
+| `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration) — **live**, from deadlock-api's match-history, keyed by Steam64→account_id conversion |
+| `GET /api/players/{steam_id}/profile` | Skill rating/percentile (live, from deadlock-api's badge/rank) and per-category (Laning/Farming/Teamfighting/Objectives) letter grades + tendencies (still derived/mock — deadlock-api's role-stats endpoint is Patreon-only) |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |
 | `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank — **live**, from deadlock-api |
 | `GET /api/stats/heroes/{hero_id}/items?rank=` | Item win/pick rates for a specific hero, optionally filtered by rank (hero identity live, item numbers still mock) |

@@ -4,25 +4,21 @@ from soulcurve_api.main import app
 
 client = TestClient(app)
 
+STEAM_ID = "76561198090955509"
 
-def test_player_matches_shape():
-    response = client.get("/api/players/76561198000000000/matches")
+
+def test_player_matches_shape(deadlock_api):
+    response = client.get(f"/api/players/{STEAM_ID}/matches")
     assert response.status_code == 200
     body = response.json()
-    assert body["steam_id"] == "76561198000000000"
-    assert len(body["matches"]) == 10
+    assert body["steam_id"] == STEAM_ID
+    assert len(body["matches"]) == 2
     for match in body["matches"]:
         assert match["result"] in ("win", "loss")
         assert match["duration_min"] > 0
-
-
-def test_player_matches_deterministic():
-    first = client.get("/api/players/123/matches").json()
-    again = client.get("/api/players/123/matches").json()
-    assert first["matches"] == again["matches"]
-
-    other = client.get("/api/players/456/matches").json()
-    assert other["matches"] != first["matches"]
+    # first mock row: player_team == match_result -> win; second: mismatch -> loss
+    assert body["matches"][0]["result"] == "win"
+    assert body["matches"][1]["result"] == "loss"
 
 
 def test_leaderboard_is_ordered_and_stable():
@@ -34,31 +30,23 @@ def test_leaderboard_is_ordered_and_stable():
     assert client.get("/api/leaderboard").json() == body
 
 
-def test_player_matches_names_leaderboard_players():
+def test_player_matches_names_leaderboard_players(deadlock_api):
     top = client.get("/api/leaderboard").json()["players"][0]
     assert client.get(f"/api/players/{top['steam_id']}/matches").json()["name"] == top["name"]
-    assert client.get("/api/players/1/matches").json()["name"] is None
+    non_leaderboard_steam_id = "76561199999999999"
+    assert non_leaderboard_steam_id != top["steam_id"]
+    assert client.get(f"/api/players/{non_leaderboard_steam_id}/matches").json()["name"] is None
 
 
-def test_player_profile_is_stable_and_consistent():
-    body = client.get("/api/players/76561198000000042/profile").json()
-    assert body == client.get("/api/players/76561198000000042/profile").json()
+def test_player_profile_shape(deadlock_api):
+    body = client.get(f"/api/players/{STEAM_ID}/profile").json()
+    assert body["steam_id"] == STEAM_ID
     categories = [g["category"] for g in body["grades"]]
     assert categories == ["Laning", "Farming", "Teamfighting", "Objectives"]
     assert 0 <= body["skill_percentile"] < 1
     tones = [t["tone"] for t in body["tendencies"]]
     assert tones in (["strength", "weakness"], ["strength"], ["weakness"], [])
 
-
-def test_player_profile_uses_leaderboard_rating():
-    top = client.get("/api/leaderboard").json()["players"][0]
-    profile = client.get(f"/api/players/{top['steam_id']}/profile").json()
-    assert profile["skill_rating"] == top["rating"]
-
-
-def test_top_players_grade_higher_than_unknown_players():
-    top = client.get("/api/leaderboard").json()["players"][0]
-    strong = client.get(f"/api/players/{top['steam_id']}/profile").json()["grades"]
-    assert all(g["letter"] in {"S", "A"} for g in strong)
-    tendencies = client.get(f"/api/players/{top['steam_id']}/profile").json()["tendencies"]
-    assert all(t["tone"] == "strength" for t in tendencies)
+    # deterministic given the same (mocked) rank data
+    again = client.get(f"/api/players/{STEAM_ID}/profile").json()
+    assert body == again
