@@ -384,3 +384,64 @@ export async function fetchMatchMap(matchId: string): Promise<MatchMapResponse> 
   }
   return response.json();
 }
+
+export interface LeaderboardPlayer {
+  position: number;
+  steam_id: string;
+  name: string;
+  rank: string;
+  rating: number;
+  win_rate: number;
+  matches: number;
+  top_hero: string;
+}
+
+export interface LeaderboardResponse {
+  region: string;
+  players: LeaderboardPlayer[];
+}
+
+export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
+  if (!response.ok) {
+    throw new Error(`Failed to load leaderboard (${response.status})`);
+  }
+  return response.json();
+}
+
+export interface Crate {
+  id: number;
+  x: number;
+  y: number;
+  area: "alley" | "tunnel";
+  spawn_min: number;
+  respawn_min: number;
+}
+
+export interface BoxRouteStop {
+  order: number;
+  crate_id: number;
+  x: number;
+  y: number;
+  arrive_s: number;
+}
+
+export interface BoxRoute {
+  team: "amber" | "sapphire";
+  stops: BoxRouteStop[];
+  loop_seconds: number;
+  naive_loop_seconds: number;
+}
+
+export interface BoxRouteResponse {
+  crates: Crate[];
+  routes: BoxRoute[];
+}
+
+export async function fetchBoxRoutes(): Promise<BoxRouteResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/map/box-routes`);
+  if (!response.ok) {
+    throw new Error(`Failed to load box routes (${response.status})`);
+  }
+  return response.json();
+}

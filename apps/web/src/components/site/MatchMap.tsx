@@ -1,16 +1,27 @@
 import { useRef, useState } from "react";
 import { Box, RotateCcw, Square } from "lucide-react";
-import type { MatchMapResponse } from "@/api";
+import type { BoxRoute, BoxRouteResponse, MatchMapResponse } from "@/api";
 import { TeamLabel } from "@/components/site/primitives";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 const TEAM_COLOR = { amber: "var(--amber)", sapphire: "var(--sapphire)" } as const;
 const LANES = [20, 50, 80];
 const RECENT_MIN = 3;
 const DEFAULT_VIEW = { tilt: 55, spin: -20 };
+const BASE_Y = { amber: 95, sapphire: 5 } as const;
 
-function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
+function duration(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function MatchMap({ map, t, boxRoutes }: { map: MatchMapResponse; t: number; boxRoutes?: BoxRouteResponse }) {
   const [view, setView] = useState(DEFAULT_VIEW);
+  const [routeTeam, setRouteTeam] = useState<BoxRoute["team"] | null>(null);
+  const route = boxRoutes?.routes.find((r) => r.team === routeTeam);
+  const routePath = route
+    ? [`M50 ${BASE_Y[route.team]}`, ...route.stops.map((s) => `L${s.x * 100} ${s.y * 100}`), `L50 ${BASE_Y[route.team]}`].join(" ")
+    : null;
   const drag = useRef<{ x: number; y: number; tilt: number; spin: number } | null>(null);
   const [dragging, setDragging] = useState(false);
   const flat = view.tilt === 0 && view.spin === 0;
@@ -23,7 +34,7 @@ function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted-foreground">
-          <span className="font-mono text-foreground tabular-nums">{kills.length}</span> kills so far ·{" "}
+          <span className="font-mono text-foreground tabular-nums">{kills.length}</span> {kills.length === 1 ? "kill" : "kills"} so far ·{" "}
           <span className="font-mono tabular-nums" style={{ color: TEAM_COLOR.amber }}>
             {tally.amber}
           </span>{" "}
@@ -32,7 +43,25 @@ function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
             {tally.sapphire}
           </span>
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {boxRoutes && (
+            <div className="flex rounded-md border p-0.5" role="group" aria-label="Optimal box route">
+              {(["amber", "sapphire"] as const).map((team) => (
+                <button
+                  key={team}
+                  type="button"
+                  aria-pressed={routeTeam === team}
+                  onClick={() => setRouteTeam(routeTeam === team ? null : team)}
+                  className={cn(
+                    "rounded px-2.5 py-1 text-xs capitalize transition-colors",
+                    routeTeam === team ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {team} route
+                </button>
+              ))}
+            </div>
+          )}
           <Button
             size="sm"
             variant="outline"
@@ -69,7 +98,7 @@ function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
           setDragging(false);
         }}
         role="img"
-        aria-label={`Schematic match map at ${Math.round(t)} minutes: ${kills.length} kills, amber ${tally.amber}, sapphire ${tally.sapphire}. Drag to rotate.`}
+        aria-label={`Schematic match map at ${Math.round(t)} minutes: ${kills.length} kills, amber ${tally.amber}, sapphire ${tally.sapphire}.${route ? ` Showing the optimal ${route.team} box route through ${route.stops.length} crates.` : ""} Drag to rotate.`}
       >
         <div
           className="size-full transition-transform duration-300 ease-out"
@@ -138,6 +167,58 @@ function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
               );
             })}
 
+            {boxRoutes?.crates.map((c) => {
+              const spawned = t >= c.spawn_min;
+              const onRoute = route?.stops.some((s) => s.crate_id === c.id);
+              return (
+                <rect
+                  key={c.id}
+                  x={c.x * 100 - 0.9}
+                  y={c.y * 100 - 0.9}
+                  width="1.8"
+                  height="1.8"
+                  rx="0.2"
+                  fill={spawned ? "var(--soul)" : "transparent"}
+                  stroke="var(--soul)"
+                  strokeWidth="0.3"
+                  opacity={route && !onRoute ? 0.15 : spawned ? 0.7 : 0.35}
+                >
+                  <title>{`${c.area === "tunnel" ? "Tunnel" : "Alley"} crate · spawns at ${duration(c.spawn_min * 60)}, respawns ${c.respawn_min} min after breaking`}</title>
+                </rect>
+              );
+            })}
+
+            {route && routePath && (
+              <g>
+                <path
+                  d={routePath}
+                  fill="none"
+                  stroke={TEAM_COLOR[route.team]}
+                  strokeWidth="0.6"
+                  strokeDasharray="1.6 1"
+                  strokeLinejoin="round"
+                  opacity="0.9"
+                />
+                {route.stops.map((s) => (
+                  <g key={s.crate_id}>
+                    <circle cx={s.x * 100} cy={s.y * 100 - 3} r="1.9" fill="#111113" stroke={TEAM_COLOR[route.team]} strokeWidth="0.35" />
+                    <text
+                      x={s.x * 100}
+                      y={s.y * 100 - 3}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="2.2"
+                      fill="white"
+                      className="font-mono"
+                    >
+                      {s.order}
+                    </text>
+                    <title>{`Stop ${s.order} · reached at ${duration(s.arrive_s)} into the loop`}</title>
+                  </g>
+                ))}
+              </g>
+            )}
+
             {kills.map((k) => {
               const age = t - k.t_min;
               const recent = age <= RECENT_MIN;
@@ -159,9 +240,22 @@ function MatchMap({ map, t }: { map: MatchMapResponse; t: number }) {
       </div>
       </div>
 
+      {route && (
+        <p className="text-center text-sm text-muted-foreground">
+          Optimal {route.team} box loop:{" "}
+          <span className="font-mono text-foreground tabular-nums">{duration(route.loop_seconds)}</span> for{" "}
+          {route.stops.length} crates, base to base ·{" "}
+          <span className="font-mono text-soul tabular-nums">
+            {route.naive_loop_seconds - route.loop_seconds}s faster
+          </span>{" "}
+          than always walking to the nearest crate
+        </p>
+      )}
+
       <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>Dots: kills, colored by the team that got them</span>
         <span>Diamonds: Guardians, Walkers, Patron</span>
+        {boxRoutes && <span>Squares: breakable crates, filled once spawned</span>}
         <TeamLabel team="amber" />
         <TeamLabel team="sapphire" />
       </p>

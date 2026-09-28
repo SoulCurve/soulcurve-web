@@ -23,3 +23,12 @@ def test_player_matches_deterministic():
 
     other = client.get("/api/players/456/matches").json()
     assert other["matches"] != first["matches"]
+
+
+def test_leaderboard_is_ordered_and_stable():
+    body = client.get("/api/leaderboard").json()
+    players = body["players"]
+    assert [p["position"] for p in players] == list(range(1, len(players) + 1))
+    ratings = [p["rating"] for p in players]
+    assert ratings == sorted(ratings, reverse=True)
+    assert client.get("/api/leaderboard").json() == body

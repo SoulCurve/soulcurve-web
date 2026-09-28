@@ -13,7 +13,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { fetchMatchMap, fetchWinProbability } from "@/api";
+import { fetchBoxRoutes, fetchMatchMap, fetchWinProbability } from "@/api";
 import { CHART, axisProps, interpolate, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import MatchHeader from "@/components/site/MatchHeader";
@@ -76,6 +76,7 @@ function MatchPage() {
   const { matchId = "" } = useParams<{ matchId: string }>();
   const { data, error } = useAsync(() => fetchWinProbability(matchId), `wp-${matchId}`);
   const map = useAsync(() => fetchMatchMap(matchId), `map-${matchId}`);
+  const boxRoutes = useAsync(fetchBoxRoutes, "box-routes");
 
   const pWins = data?.points.map((p) => p.p_win) ?? [];
   const last = data?.points[data.points.length - 1];
@@ -208,11 +209,11 @@ function MatchPage() {
           <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
             <Section
               title="Match Map"
-              description="Schematic map, follows the replay above · drag to rotate"
+              description="Schematic map, follows the replay above · drag to rotate · toggle a team's optimal box route"
             >
               {map.error && <ErrorState message={map.error} />}
               {!map.data && !map.error && <LoadingState label="Loading map…" variant="rows" />}
-              {map.data && <MatchMap map={map.data} t={replay.t} />}
+              {map.data && <MatchMap map={map.data} t={replay.t} boxRoutes={boxRoutes.data ?? undefined} />}
             </Section>
 
             <Section title="Objectives">
