@@ -55,12 +55,6 @@
       "skillPath": "skills/systematic-debugging/SKILL.md",
       "computedHash": "3589907ee34dc8b1b7223a33fac98ab841a9e42f9960ab4433a832f0c6f00be0"
     },
-    "task-observer": {
-      "source": "rebelytics/one-skill-to-rule-them-all",
-      "sourceType": "github",
-      "skillPath": "SKILL.md",
-      "computedHash": "836c9f54ce4f0e005f6fafc9d078ab8efabff59ad17f5083c5b1346c1ecf9fed"
-    },
     "test-driven-development": {
       "source": "obra/superpowers",
       "sourceType": "github",
