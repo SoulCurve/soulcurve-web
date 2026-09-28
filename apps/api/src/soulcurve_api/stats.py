@@ -8,7 +8,13 @@ import hashlib
 
 from fastapi import APIRouter, HTTPException
 
-from soulcurve_api.models import HeroItemStatsResponse, HeroStat, HeroStatsResponse, ItemStat
+from soulcurve_api.models import (
+    HeroItemStatsResponse,
+    HeroStat,
+    HeroStatsResponse,
+    ItemsResponse,
+    ItemStat,
+)
 
 router = APIRouter()
 
@@ -64,6 +70,24 @@ def _rank_adjusted_heroes(rank: str) -> list[HeroStat]:
     return heroes
 
 
+_MOCK_ITEMS: list[ItemStat] = [
+    ItemStat(item_id=200 + i, name=name, win_rate=win_rate, pick_rate=pick_rate)
+    for i, (name, win_rate, pick_rate) in enumerate(
+        [
+            ("Extra Health", 0.54, 0.62),
+            ("Extra Stamina", 0.50, 0.41),
+            ("Basic Magazine", 0.49, 0.55),
+            ("Sprint Boots", 0.53, 0.38),
+            ("Melee Lifesteal", 0.47, 0.22),
+            ("Extra Regen", 0.51, 0.29),
+            ("Restorative Shot", 0.56, 0.19),
+            ("Mystic Reach", 0.45, 0.16),
+            ("Healing Rite", 0.52, 0.33),
+            ("Spirit Strike", 0.48, 0.14),
+        ]
+    )
+]
+
 _MOCK_ITEMS_BY_HERO: dict[int, list[ItemStat]] = {
     hero.hero_id: [
         ItemStat(item_id=100 + i, name=name, win_rate=win_rate, pick_rate=pick_rate)
@@ -92,6 +116,11 @@ def hero_stats(rank: str | None = None) -> HeroStatsResponse:
         raise HTTPException(status_code=422, detail="Unknown rank")
     heroes = _rank_adjusted_heroes(rank) if rank else _MOCK_HEROES
     return HeroStatsResponse(patch=MOCK_PATCH, rank=rank, heroes=heroes)
+
+
+@router.get("/api/stats/items")
+def item_stats() -> ItemsResponse:
+    return ItemsResponse(patch=MOCK_PATCH, items=_MOCK_ITEMS)
 
 
 @router.get("/api/stats/heroes/{hero_id}/items")

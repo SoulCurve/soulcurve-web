@@ -56,6 +56,11 @@ class HeroItemStatsResponse(BaseModel):
     items: list[ItemStat]
 
 
+class ItemsResponse(BaseModel):
+    patch: str
+    items: list[ItemStat]
+
+
 class PlayerMoment(BaseModel):
     t_min: float
     type: Literal["death", "objective_loss", "objective_win", "good_trade", "rotation"]

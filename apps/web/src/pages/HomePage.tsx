@@ -3,7 +3,14 @@ import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, YAxis } from "recharts";
-import { fetchHeroStats, fetchMatchAnalysis, fetchNews, fetchWinProbability, steamLoginUrl } from "@/api";
+import {
+  fetchHeroStats,
+  fetchItemStats,
+  fetchMatchAnalysis,
+  fetchNews,
+  fetchWinProbability,
+  steamLoginUrl,
+} from "@/api";
 import { CHART, percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
 import { PageShell, Section } from "@/components/site/primitives";
@@ -161,9 +168,11 @@ function SearchBar() {
 
 function HomePage() {
   const heroes = useAsync(fetchHeroStats, "heroes");
+  const items = useAsync(fetchItemStats, "home-items");
   const news = useAsync(fetchNews, "news");
 
   const topHeroes = heroes.data ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5) : [];
+  const topItems = items.data ? [...items.data.items].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5) : [];
 
   return (
     <PageShell>
@@ -219,6 +228,47 @@ function HomePage() {
                   </TableCell>
                   <TableCell className="text-right font-mono text-muted-foreground tabular-nums">
                     {percent(hero.pick_rate)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Section>
+
+        <Section
+          title="Top Items"
+          description={items.data ? `Highest win rate · patch ${items.data.patch}` : undefined}
+          action={
+            <Link to="/stats" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
+              All Stats
+            </Link>
+          }
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-8">#</TableHead>
+                <TableHead>Item</TableHead>
+                <TableHead className="text-right">Win Rate</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {topItems.map((item, i) => (
+                <TableRow key={item.item_id}>
+                  <TableCell className="font-mono text-muted-foreground tabular-nums">{i + 1}</TableCell>
+                  <TableCell>
+                    <span className="flex items-center gap-2.5">
+                      <GameIcon name={item.name} kind="item" />
+                      {item.name}
+                    </span>
+                  </TableCell>
+                  <TableCell
+                    className={cn(
+                      "text-right font-mono tabular-nums",
+                      item.win_rate > 0.5 ? "text-soul" : "text-muted-foreground",
+                    )}
+                  >
+                    {percent(item.win_rate)}
                   </TableCell>
                 </TableRow>
               ))}

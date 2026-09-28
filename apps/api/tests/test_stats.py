@@ -61,6 +61,17 @@ def test_hero_stats_filtered_by_rank():
     assert other["heroes"] != body["heroes"]
 
 
+def test_item_stats_shape():
+    response = client.get("/api/stats/items")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["patch"]
+    assert len(body["items"]) > 5
+    for item in body["items"]:
+        assert 0.0 <= item["win_rate"] <= 1.0
+        assert 0.0 <= item["pick_rate"] <= 1.0
+
+
 def test_hero_stats_rejects_unknown_rank():
     response = client.get("/api/stats/heroes", params={"rank": "Legendary"})
     assert response.status_code == 422
