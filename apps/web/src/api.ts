@@ -145,8 +145,9 @@ export async function fetchRanks(): Promise<string[]> {
   return response.json();
 }
 
-export async function fetchHeroItemStats(heroId: number): Promise<HeroItemStatsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/items`);
+export async function fetchHeroItemStats(heroId: number, rank?: string | null): Promise<HeroItemStatsResponse> {
+  const query = rank ? `?rank=${encodeURIComponent(rank)}` : "";
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/items${query}`);
   if (!response.ok) {
     throw new Error(`Failed to load item stats (${response.status})`);
   }
@@ -165,11 +166,13 @@ export interface HeroBuildsResponse {
   patch: string;
   hero_id: number;
   hero_name: string;
+  rank: string | null;
   builds: Build[];
 }
 
-export async function fetchHeroBuilds(heroId: number): Promise<HeroBuildsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/builds`);
+export async function fetchHeroBuilds(heroId: number, rank?: string | null): Promise<HeroBuildsResponse> {
+  const query = rank ? `?rank=${encodeURIComponent(rank)}` : "";
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/builds${query}`);
   if (!response.ok) {
     throw new Error(`Failed to load builds (${response.status})`);
   }
@@ -443,6 +446,53 @@ export async function fetchBoxRoutes(): Promise<BoxRouteResponse> {
   const response = await fetch(`${API_BASE_URL}/api/map/box-routes`);
   if (!response.ok) {
     throw new Error(`Failed to load box routes (${response.status})`);
+  }
+  return response.json();
+}
+
+export interface PlayerGrade {
+  category: string;
+  letter: "S" | "A" | "B" | "C" | "D" | "F";
+  score: number;
+}
+
+export interface PlayerTendency {
+  label: string;
+  detail: string;
+  tone: "strength" | "weakness";
+}
+
+export interface PlayerProfileResponse {
+  steam_id: string;
+  skill_rating: number;
+  skill_percentile: number;
+  grades: PlayerGrade[];
+  tendencies: PlayerTendency[];
+}
+
+export async function fetchPlayerProfile(steamId: string): Promise<PlayerProfileResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/players/${encodeURIComponent(steamId)}/profile`);
+  if (!response.ok) {
+    throw new Error(`Failed to load player profile (${response.status})`);
+  }
+  return response.json();
+}
+
+export interface NetWorthPoint {
+  t_min: number;
+  amber: number;
+  sapphire: number;
+}
+
+export interface NetWorthResponse {
+  match_id: number;
+  points: NetWorthPoint[];
+}
+
+export async function fetchNetWorth(matchId: string): Promise<NetWorthResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/matches/${encodeURIComponent(matchId)}/net-worth`);
+  if (!response.ok) {
+    throw new Error(`Failed to load net worth (${response.status})`);
   }
   return response.json();
 }

@@ -181,14 +181,35 @@ def item_stats() -> ItemsResponse:
     return ItemsResponse(patch=MOCK_PATCH, items=_MOCK_ITEMS)
 
 
+def _rank_adjusted_items(items: list[ItemStat], rank: str, hero_id: int) -> list[ItemStat]:
+    """Same idea as _rank_adjusted_heroes: stable per-rank variance so the filter shows."""
+    adjusted = []
+    for item in items:
+        seed = int(hashlib.sha256(f"{rank}:{hero_id}:{item.item_id}".encode()).hexdigest(), 16)
+        win_delta = ((seed % 800) - 400) / 10000  # +/-4pp
+        pick_delta = (((seed // 800) % 800) - 400) / 10000
+        adjusted.append(
+            ItemStat(
+                item_id=item.item_id,
+                name=item.name,
+                win_rate=round(min(0.75, max(0.25, item.win_rate + win_delta)), 3),
+                pick_rate=round(min(0.95, max(0.02, item.pick_rate + pick_delta)), 3),
+            )
+        )
+    return adjusted
+
+
 @router.get("/api/stats/heroes/{hero_id}/items")
-def hero_item_stats(hero_id: int) -> HeroItemStatsResponse:
+def hero_item_stats(hero_id: int, rank: str | None = None) -> HeroItemStatsResponse:
+    if rank is not None and rank not in RANKS:
+        raise HTTPException(status_code=422, detail="Unknown rank")
     hero = next((h for h in _MOCK_HEROES if h.hero_id == hero_id), None)
     if hero is None:
         raise HTTPException(status_code=404, detail="Hero not found")
+    items = _MOCK_ITEMS_BY_HERO[hero_id]
     return HeroItemStatsResponse(
         patch=MOCK_PATCH,
         hero_id=hero.hero_id,
         hero_name=hero.name,
-        items=_MOCK_ITEMS_BY_HERO[hero_id],
+        items=_rank_adjusted_items(items, rank, hero_id) if rank else items,
     )

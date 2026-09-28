@@ -14,7 +14,10 @@ from soulcurve_api.models import (
     LeaderboardPlayer,
     LeaderboardResponse,
     MatchSummary,
+    PlayerGrade,
     PlayerMatchesResponse,
+    PlayerProfileResponse,
+    PlayerTendency,
 )
 from soulcurve_api.stats import _MOCK_HEROES
 
@@ -88,3 +91,79 @@ def leaderboard() -> LeaderboardResponse:
             )
         )
     return LeaderboardResponse(region="Global", players=players)
+
+
+# Categories graded 0-1, in the spirit of Deadlock Labs' role grade and Mobalytics' GPI.
+_GRADE_CATEGORIES = ["Laning", "Farming", "Teamfighting", "Objectives"]
+_GRADE_BANDS = [(0.85, "S"), (0.7, "A"), (0.55, "B"), (0.4, "C"), (0.25, "D")]
+
+# One line per category for each tone; shown when that category is the player's best or worst.
+_TENDENCY_COPY = {
+    "Laning": (
+        "Wins the lane",
+        "Ahead on souls at 10 minutes in most games",
+        "Falls behind in lane",
+        "Often trails on souls by 10 minutes",
+    ),
+    "Farming": (
+        "Efficient farmer",
+        "Clears jungle camps and crates quickly between fights",
+        "Leaves souls on the map",
+        "Misses camps and crates that are up",
+    ),
+    "Teamfighting": (
+        "Strong in team fights",
+        "Survives and trades well when both teams commit",
+        "Dies early in fights",
+        "Often the first one down when fights start",
+    ),
+    "Objectives": (
+        "Pushes objectives",
+        "Turns won fights into Guardians and Walkers",
+        "Slow to take objectives",
+        "Wins fights but rarely converts them into objectives",
+    ),
+}
+
+
+def _seed(key: str) -> int:
+    return int(hashlib.sha256(key.encode()).hexdigest(), 16)
+
+
+def _letter(score: float) -> str:
+    return next((letter for floor, letter in _GRADE_BANDS if score >= floor), "F")
+
+
+@router.get("/api/players/{steam_id}/profile")
+def player_profile(steam_id: str) -> PlayerProfileResponse:
+    # ponytail: rating is seeded per player; the real estimate comes from match results in M4.
+    # Leaderboard players keep their leaderboard rating so the two pages agree.
+    ratings = {p.steam_id: p.rating for p in leaderboard().players}
+    rating = ratings.get(steam_id, 1200 + _seed(f"rating:{steam_id}") % 2800)
+    percentile = round(min(0.999, (rating - 1200) / 3000), 3)
+
+    # Grades lean on the rating so a top player doesn't show a wall of Ds, plus per-category noise.
+    grades = []
+    for category in _GRADE_CATEGORIES:
+        noise = (_seed(f"grade:{steam_id}:{category}") % 1000) / 1000
+        score = round(min(0.98, 0.15 + 0.55 * percentile + 0.3 * noise), 3)
+        grades.append(PlayerGrade(category=category, letter=_letter(score), score=score))
+
+    # Only call something a strength at B or better, and a weakness at C or worse.
+    tendencies = []
+    best = max(grades, key=lambda g: g.score)
+    if best.score >= 0.55:
+        label, detail, _, _ = _TENDENCY_COPY[best.category]
+        tendencies.append(PlayerTendency(label=label, detail=detail, tone="strength"))
+    worst = min(grades, key=lambda g: g.score)
+    if worst.score < 0.55:
+        _, _, label, detail = _TENDENCY_COPY[worst.category]
+        tendencies.append(PlayerTendency(label=label, detail=detail, tone="weakness"))
+
+    return PlayerProfileResponse(
+        steam_id=steam_id,
+        skill_rating=rating,
+        skill_percentile=percentile,
+        grades=grades,
+        tendencies=tendencies,
+    )

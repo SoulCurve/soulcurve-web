@@ -3,8 +3,8 @@ import { UserMinus } from "lucide-react";
 import { fetchPlayerMatches } from "@/api";
 import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
-import { ErrorState, PageHeader, PageShell, Section } from "@/components/site/primitives";
-import { Button } from "@/components/ui/button";
+import { EmptyState, ErrorState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useFollowing } from "@/lib/following";
 import { useAsync } from "@/lib/useAsync";
@@ -66,13 +66,15 @@ function FollowingPage() {
         description="Players you follow and how their last few matches went. Saved in this browser."
       />
       {following.ids.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          You're not following anyone yet.{" "}
-          <Link to="/" className="text-soul hover:underline">
-            Search for a player
-          </Link>{" "}
-          and press Follow on their profile.
-        </p>
+        <EmptyState
+          title="You're not following anyone yet"
+          description="Follow a player from their profile to track how their recent matches go."
+          action={
+            <Link to="/" className={cn(buttonVariants({ size: "sm" }), "mt-2")}>
+              Search for a player
+            </Link>
+          }
+        />
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {following.ids.map((id) => (

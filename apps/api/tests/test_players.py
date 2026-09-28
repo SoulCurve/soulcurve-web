@@ -38,3 +38,27 @@ def test_player_matches_names_leaderboard_players():
     top = client.get("/api/leaderboard").json()["players"][0]
     assert client.get(f"/api/players/{top['steam_id']}/matches").json()["name"] == top["name"]
     assert client.get("/api/players/1/matches").json()["name"] is None
+
+
+def test_player_profile_is_stable_and_consistent():
+    body = client.get("/api/players/76561198000000042/profile").json()
+    assert body == client.get("/api/players/76561198000000042/profile").json()
+    categories = [g["category"] for g in body["grades"]]
+    assert categories == ["Laning", "Farming", "Teamfighting", "Objectives"]
+    assert 0 <= body["skill_percentile"] < 1
+    tones = [t["tone"] for t in body["tendencies"]]
+    assert tones in (["strength", "weakness"], ["strength"], ["weakness"], [])
+
+
+def test_player_profile_uses_leaderboard_rating():
+    top = client.get("/api/leaderboard").json()["players"][0]
+    profile = client.get(f"/api/players/{top['steam_id']}/profile").json()
+    assert profile["skill_rating"] == top["rating"]
+
+
+def test_top_players_grade_higher_than_unknown_players():
+    top = client.get("/api/leaderboard").json()["players"][0]
+    strong = client.get(f"/api/players/{top['steam_id']}/profile").json()["grades"]
+    assert all(g["letter"] in {"S", "A"} for g in strong)
+    tendencies = client.get(f"/api/players/{top['steam_id']}/profile").json()["tendencies"]
+    assert all(t["tone"] == "strength" for t in tendencies)

@@ -20,6 +20,7 @@ from soulcurve_api.builds import router as builds_router
 from soulcurve_api.match_map import router as match_map_router
 from soulcurve_api.model_info import router as model_info_router
 from soulcurve_api.models import MatchEvent, WinProbabilityPoint, WinProbabilityResponse
+from soulcurve_api.net_worth import router as net_worth_router
 from soulcurve_api.news import router as news_router
 from soulcurve_api.players import router as players_router
 from soulcurve_api.stats import router as stats_router
@@ -46,6 +47,7 @@ app.include_router(blog_router)
 app.include_router(tournaments_router)
 app.include_router(match_map_router)
 app.include_router(box_routes_router)
+app.include_router(net_worth_router)
 
 
 @app.get("/health")

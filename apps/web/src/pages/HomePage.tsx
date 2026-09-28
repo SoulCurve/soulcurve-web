@@ -17,12 +17,23 @@ import { CHART, percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
 import { PageShell, Section } from "@/components/site/primitives";
 import { buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAsync } from "@/lib/useAsync";
 import { useSteamId } from "@/lib/useSteamId";
 import { cn } from "@/lib/utils";
 
 const SAMPLE_MATCH = "1";
+
+function RowSkeletons({ count }: { count: number }) {
+  return (
+    <div className="flex flex-col gap-3 py-1">
+      {Array.from({ length: count }, (_, i) => (
+        <Skeleton key={i} className="h-4 w-full" />
+      ))}
+    </div>
+  );
+}
 
 function SampleMatch() {
   const wp = useAsync(() => fetchWinProbability(SAMPLE_MATCH), `wp-${SAMPLE_MATCH}`);
@@ -203,6 +214,8 @@ function HomePage() {
             </Link>
           }
         >
+          {!heroes.data && <RowSkeletons count={5} />}
+          {heroes.data && (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -237,6 +250,7 @@ function HomePage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </Section>
 
         <Section
@@ -248,6 +262,8 @@ function HomePage() {
             </Link>
           }
         >
+          {!items.data && <RowSkeletons count={5} />}
+          {items.data && (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -278,12 +294,15 @@ function HomePage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </Section>
 
         <Section
           title="Top Players"
           description={leaderboard.data ? `${leaderboard.data.region} leaderboard` : undefined}
         >
+          {!leaderboard.data && <RowSkeletons count={5} />}
+          {leaderboard.data && (
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -309,6 +328,7 @@ function HomePage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </Section>
 
         <Section
@@ -319,6 +339,7 @@ function HomePage() {
             </Link>
           }
         >
+          {!blog.data && <RowSkeletons count={3} />}
           <ul className="flex flex-col divide-y">
             {blog.data?.posts.slice(0, 3).map((post) => (
               <li key={post.slug} className="py-3 first:pt-0 last:pb-0">
@@ -340,6 +361,7 @@ function HomePage() {
             </Link>
           }
         >
+          {!news.data && <RowSkeletons count={3} />}
           <ul className="flex flex-col divide-y">
             {news.data?.items.slice(0, 3).map((item) => (
               <li key={item.id} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">

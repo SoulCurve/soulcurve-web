@@ -28,14 +28,16 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 |---|---|
 | `GET /health` | Liveness + API version |
 | `GET /api/matches/{match_id}/win-probability` | The match's win-probability time series |
+| `GET /api/matches/{match_id}/net-worth` | Per-team total souls over time, derived from the win-probability curve |
 | `GET /api/matches/{match_id}/map` | Kill positions and objective states on a schematic map (normalized 0–1 coords) |
 | `GET /api/matches/{match_id}/analysis` | Per-player WPA-style mistake analysis (0–10 score + flagged moments) |
 | `GET /api/map/box-routes` | Breakable crate positions/timers and each team's optimal crate loop (exact shortest base-to-base order) vs. the greedy nearest-crate loop |
 | `GET /api/leaderboard` | Top-rated players (mock, fictional handles until M4) |
 | `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration), plus their name when they're on the leaderboard |
+| `GET /api/players/{steam_id}/profile` | Skill rating/percentile, per-category (Laning/Farming/Teamfighting/Objectives) letter grades, and strength/weakness tendencies |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |
 | `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank |
-| `GET /api/stats/heroes/{hero_id}/items` | Item win/pick rates for a specific hero |
+| `GET /api/stats/heroes/{hero_id}/items?rank=` | Item win/pick rates for a specific hero, optionally filtered by rank |
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
 | `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
 | `GET /api/stats/patch-summary` | Biggest hero win-rate winners/losers vs. the previous patch |
