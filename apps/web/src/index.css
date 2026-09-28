@@ -104,12 +104,6 @@
   body {
     @apply bg-background text-foreground min-h-svh;
     font-size: 14px;
-    /* Faint blueprint grid: the Deadlock texture for every page without a hero image. */
-    background-image:
-      linear-gradient(to right, rgb(255 255 255 / 0.028) 1px, transparent 1px),
-      linear-gradient(to bottom, rgb(255 255 255 / 0.028) 1px, transparent 1px);
-    background-size: 48px 48px;
-    background-position: center top;
   }
 
   #root {

@@ -4,8 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronDown, Search } from "lucide-react";
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, YAxis } from "recharts";
 import {
+  fetchBlogList,
   fetchHeroStats,
   fetchItemStats,
+  fetchLeaderboard,
   fetchMatchAnalysis,
   fetchNews,
   fetchWinProbability,
@@ -170,6 +172,8 @@ function HomePage() {
   const heroes = useAsync(fetchHeroStats, "heroes");
   const items = useAsync(fetchItemStats, "home-items");
   const news = useAsync(fetchNews, "news");
+  const leaderboard = useAsync(fetchLeaderboard, "leaderboard");
+  const blog = useAsync(fetchBlogList, "blog");
 
   const topHeroes = heroes.data ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5) : [];
   const topItems = items.data ? [...items.data.items].sort((a, b) => b.win_rate - a.win_rate).slice(0, 5) : [];
@@ -274,6 +278,58 @@ function HomePage() {
               ))}
             </TableBody>
           </Table>
+        </Section>
+
+        <Section
+          title="Top Players"
+          description={leaderboard.data ? `${leaderboard.data.region} leaderboard` : undefined}
+        >
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-8">#</TableHead>
+                <TableHead>Player</TableHead>
+                <TableHead>Rank</TableHead>
+                <TableHead className="text-right">Rating</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {leaderboard.data?.players.slice(0, 5).map((player) => (
+                <TableRow key={player.steam_id}>
+                  <TableCell className="font-mono text-muted-foreground tabular-nums">{player.position}</TableCell>
+                  <TableCell>
+                    <Link to={`/player/${player.steam_id}`} className="flex items-center gap-2.5 hover:text-soul">
+                      <GameIcon name={player.top_hero} kind="hero" />
+                      <span className="truncate">{player.name}</span>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{player.rank}</TableCell>
+                  <TableCell className="text-right font-mono tabular-nums">{player.rating.toLocaleString("en-US")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Section>
+
+        <Section
+          title="Blog"
+          action={
+            <Link to="/blog" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "-my-1")}>
+              All Posts
+            </Link>
+          }
+        >
+          <ul className="flex flex-col divide-y">
+            {blog.data?.posts.slice(0, 3).map((post) => (
+              <li key={post.slug} className="py-3 first:pt-0 last:pb-0">
+                <Link to={`/blog/${post.slug}`} className="group flex flex-col gap-1">
+                  <span className="font-mono text-xs text-muted-foreground tabular-nums">{post.date}</span>
+                  <span className="text-sm group-hover:text-soul">{post.title}</span>
+                  <span className="line-clamp-2 text-xs text-muted-foreground">{post.excerpt}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </Section>
 
         <Section

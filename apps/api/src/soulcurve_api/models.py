@@ -235,3 +235,48 @@ class Tournament(TournamentSummary):
 
 class TournamentListResponse(BaseModel):
     tournaments: list[TournamentSummary]
+
+
+class LeaderboardPlayer(BaseModel):
+    position: int
+    steam_id: str
+    name: str
+    rank: str
+    rating: int
+    win_rate: float
+    matches: int
+    top_hero: str
+
+
+class LeaderboardResponse(BaseModel):
+    region: str
+    players: list[LeaderboardPlayer]
+
+
+class Crate(BaseModel):
+    id: int
+    x: float
+    y: float
+    area: Literal["alley", "tunnel"]
+    spawn_min: float
+    respawn_min: float
+
+
+class BoxRouteStop(BaseModel):
+    order: int
+    crate_id: int
+    x: float
+    y: float
+    arrive_s: int
+
+
+class BoxRoute(BaseModel):
+    team: Literal["amber", "sapphire"]
+    stops: list[BoxRouteStop]
+    loop_seconds: int
+    naive_loop_seconds: int
+
+
+class BoxRouteResponse(BaseModel):
+    crates: list[Crate]
+    routes: list[BoxRoute]

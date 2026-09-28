@@ -15,6 +15,7 @@ from soulcurve_api import __version__
 from soulcurve_api.analysis import router as analysis_router
 from soulcurve_api.auth import router as auth_router
 from soulcurve_api.blog import router as blog_router
+from soulcurve_api.box_routes import router as box_routes_router
 from soulcurve_api.builds import router as builds_router
 from soulcurve_api.match_map import router as match_map_router
 from soulcurve_api.model_info import router as model_info_router
@@ -44,6 +45,7 @@ app.include_router(model_info_router)
 app.include_router(blog_router)
 app.include_router(tournaments_router)
 app.include_router(match_map_router)
+app.include_router(box_routes_router)
 
 
 @app.get("/health")
