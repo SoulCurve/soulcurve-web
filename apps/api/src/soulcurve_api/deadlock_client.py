@@ -46,3 +46,20 @@ async def fetch_heroes() -> dict[int, str]:
     return {
         h["id"]: h["name"] for h in heroes if h.get("player_selectable") and not h.get("disabled")
     }
+
+
+async def fetch_items() -> dict[int, str]:
+    """Purchasable shop upgrade items (weapon/vitality/spirit), keyed by item_id."""
+    items = await _get("/v1/assets/items/by-type/upgrade", {}, _HEROES_TTL_S)
+    return {i["id"]: i["name"] for i in items if i.get("shopable")}
+
+
+async def fetch_item_stats(
+    hero_id: int, min_badge: int | None = None, max_badge: int | None = None
+) -> list[dict]:
+    params: dict = {"hero_id": hero_id}
+    if min_badge is not None:
+        params["min_average_badge"] = min_badge
+    if max_badge is not None:
+        params["max_average_badge"] = max_badge
+    return await _get("/v1/analytics/item-stats", params, _HERO_STATS_TTL_S)

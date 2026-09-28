@@ -93,6 +93,14 @@ _MOCK_ITEMS: list[ItemStat] = [
 ]
 
 
+def _badge_range(rank: str | None) -> tuple[int | None, int | None]:
+    """Rank name -> deadlock-api badge tier range (tier*10 .. tier*10+9)."""
+    if rank is None:
+        return None, None
+    tier = RANKS.index(rank)
+    return tier * 10, tier * 10 + 9
+
+
 @router.get("/api/stats/ranks")
 def ranks() -> list[str]:
     return RANKS
@@ -103,9 +111,7 @@ async def hero_stats(rank: str | None = None) -> HeroStatsResponse:
     if rank is not None and rank not in RANKS:
         raise HTTPException(status_code=422, detail="Unknown rank")
 
-    tier = RANKS.index(rank) if rank else None
-    min_badge = tier * 10 if tier is not None else None
-    max_badge = tier * 10 + 9 if tier is not None else None
+    min_badge, max_badge = _badge_range(rank)
 
     try:
         raw_stats, hero_names = await asyncio.gather(
@@ -169,39 +175,45 @@ def item_stats() -> ItemsResponse:
     return ItemsResponse(patch=MOCK_PATCH, items=_MOCK_ITEMS)
 
 
-def _rank_adjusted_items(items: list[ItemStat], rank: str, hero_id: int) -> list[ItemStat]:
-    """Same idea as _rank_adjusted_heroes: stable per-rank variance so the filter shows."""
-    adjusted = []
-    for item in items:
-        seed = int(hashlib.sha256(f"{rank}:{hero_id}:{item.item_id}".encode()).hexdigest(), 16)
-        win_delta = ((seed % 800) - 400) / 10000  # +/-4pp
-        pick_delta = (((seed // 800) % 800) - 400) / 10000
-        adjusted.append(
-            ItemStat(
-                item_id=item.item_id,
-                name=item.name,
-                win_rate=round(min(0.75, max(0.25, item.win_rate + win_delta)), 3),
-                pick_rate=round(min(0.95, max(0.02, item.pick_rate + pick_delta)), 3),
-            )
-        )
-    return adjusted
+ITEMS_PER_HERO = 12
 
 
 @router.get("/api/stats/heroes/{hero_id}/items")
 async def hero_item_stats(hero_id: int, rank: str | None = None) -> HeroItemStatsResponse:
     if rank is not None and rank not in RANKS:
         raise HTTPException(status_code=422, detail="Unknown rank")
+
+    min_badge, max_badge = _badge_range(rank)
+
     try:
-        hero_names = await deadlock_client.fetch_heroes()
+        hero_names, item_names, item_rows, hero_rows = await asyncio.gather(
+            deadlock_client.fetch_heroes(),
+            deadlock_client.fetch_items(),
+            deadlock_client.fetch_item_stats(hero_id, min_badge, max_badge),
+            deadlock_client.fetch_hero_stats(min_badge, max_badge),
+        )
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+
     hero_name = hero_names.get(hero_id)
     if hero_name is None:
         raise HTTPException(status_code=404, detail="Hero not found")
-    items = _MOCK_ITEMS[:5]
+
+    hero_matches = next((row["matches"] for row in hero_rows if row["hero_id"] == hero_id), 0)
+    items = [
+        ItemStat(
+            item_id=row["item_id"],
+            name=item_names[row["item_id"]],
+            win_rate=round(row["wins"] / row["matches"], 3),
+            pick_rate=round(min(1.0, row["matches"] / hero_matches), 3),
+        )
+        for row in item_rows
+        if row["item_id"] in item_names and row["matches"] > 0 and hero_matches
+    ]
+    items.sort(key=lambda i: i.pick_rate, reverse=True)
     return HeroItemStatsResponse(
         patch=MOCK_PATCH,
         hero_id=hero_id,
         hero_name=hero_name,
-        items=_rank_adjusted_items(items, rank, hero_id) if rank else items,
+        items=items[:ITEMS_PER_HERO],
     )

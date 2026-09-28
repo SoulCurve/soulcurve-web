@@ -25,9 +25,13 @@ def test_hero_item_stats_shape(deadlock_api):
     assert response.status_code == 200
     body = response.json()
     assert body["hero_id"] == hero_id
-    assert len(body["items"]) > 0
+    assert len(body["items"]) == 3  # the 4th mock item is unshopable and filtered out
     for item in body["items"]:
         assert 0.0 <= item["win_rate"] <= 1.0
+        assert 0.0 <= item["pick_rate"] <= 1.0
+    # sorted by pick rate, highest first
+    pick_rates = [i["pick_rate"] for i in body["items"]]
+    assert pick_rates == sorted(pick_rates, reverse=True)
 
 
 def test_hero_item_stats_404_for_unknown_hero(deadlock_api):
@@ -94,8 +98,8 @@ def test_patch_summary_shape():
 
 
 def test_hero_items_rank_filter(deadlock_api):
-    base = client.get("/api/stats/heroes/1/items").json()["items"]
-    ranked = client.get("/api/stats/heroes/1/items?rank=Eternus").json()["items"]
-    assert [i["name"] for i in ranked] == [i["name"] for i in base]
-    assert ranked != base
+    ranked = client.get("/api/stats/heroes/1/items?rank=Eternus")
+    assert ranked.status_code == 200
+    assert len(ranked.json()["items"]) == 3
+
     assert client.get("/api/stats/heroes/1/items?rank=Nope").status_code == 422
