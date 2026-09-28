@@ -31,10 +31,8 @@ def test_hero_builds_deterministic(deadlock_api):
     assert first == again
 
 
-def test_build_authors_are_leaderboard_players(deadlock_api):
-    names = {p["name"] for p in client.get("/api/leaderboard").json()["players"]}
+def test_build_authors_are_distinct():
     authors = [b["author"] for b in client.get("/api/stats/heroes/1/builds").json()["builds"]]
-    assert set(authors) <= names
     assert len(set(authors)) == len(authors)
 
 

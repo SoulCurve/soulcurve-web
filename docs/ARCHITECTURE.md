@@ -16,12 +16,16 @@
 
 ## Current status (2026-09-28)
 
-Every endpoint below is implemented and live. Real deadlock-api.com data integration has
-started: `/api/stats/heroes` (and the hero identity used by `/items` and `/builds`) is now
-live, sourced from `/v1/analytics/hero-stats` and `/v1/assets/heroes`, with rank filtering
-via badge tier. Everything else still returns fixed/deterministic mock data — either static
-or seeded deterministically (e.g. by steam_id or rank) so it looks plausible and is stable
-across reloads, per `docs/DECISIONS.md` D2–D4 — pending further integration.
+Every endpoint below is implemented and live. Real deadlock-api.com data integration is well
+underway: hero/item stats, player match history/rank, and the leaderboard are all live now.
+Leaderboard identity (deadlock-api's own leaderboard gives ambiguous `possible_account_ids`
+for common names) is resolved via deadlock-api's `steam-search` endpoint, cross-checked
+against the leaderboard's own candidate list. Item builds remain mock — deadlock-api has no
+endpoint for them. Per-category player grades stay hybrid (real percentile, synthetic
+breakdown) since deadlock-api's role-stats endpoint is Patreon-only. Everything else still
+returns fixed/deterministic mock data — either static or seeded deterministically (e.g. by
+steam_id or rank) so it looks plausible and is stable across reloads, per `docs/DECISIONS.md`
+D2–D4 — pending further integration.
 
 ## API contract
 
@@ -33,7 +37,7 @@ across reloads, per `docs/DECISIONS.md` D2–D4 — pending further integration.
 | `GET /api/matches/{match_id}/map` | Kill positions and objective states on a schematic map (normalized 0–1 coords) |
 | `GET /api/matches/{match_id}/analysis` | Per-player WPA-style mistake analysis (0–10 score + flagged moments) |
 | `GET /api/map/box-routes` | Breakable crate positions/timers and each team's optimal crate loop (exact shortest base-to-base order) vs. the greedy nearest-crate loop |
-| `GET /api/leaderboard` | Top-rated players (mock, fictional handles until M4) |
+| `GET /api/leaderboard` | Top-rated players — **live**, from deadlock-api's NAmerica leaderboard (name/rank real; win_rate/matches computed from real match history) |
 | `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration) — **live**, from deadlock-api's match-history, keyed by Steam64→account_id conversion |
 | `GET /api/players/{steam_id}/profile` | Skill rating/percentile (live, from deadlock-api's badge/rank) and per-category (Laning/Farming/Teamfighting/Objectives) letter grades + tendencies (still derived/mock — deadlock-api's role-stats endpoint is Patreon-only) |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |

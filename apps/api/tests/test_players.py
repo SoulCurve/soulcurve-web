@@ -21,13 +21,17 @@ def test_player_matches_shape(deadlock_api):
     assert body["matches"][1]["result"] == "loss"
 
 
-def test_leaderboard_is_ordered_and_stable():
+def test_leaderboard_is_ordered_and_stable(deadlock_api):
     body = client.get("/api/leaderboard").json()
     players = body["players"]
     assert [p["position"] for p in players] == list(range(1, len(players) + 1))
-    ratings = [p["rating"] for p in players]
-    assert ratings == sorted(ratings, reverse=True)
     assert client.get("/api/leaderboard").json() == body
+
+
+def test_leaderboard_disambiguates_ambiguous_name(deadlock_api):
+    players = client.get("/api/leaderboard").json()["players"]
+    ambiguous = next(p for p in players if p["name"] == "Ambiguous")
+    assert ambiguous["steam_id"] == str(9002 + 76561197960265728)
 
 
 def test_player_matches_names_leaderboard_players(deadlock_api):

@@ -57,6 +57,32 @@ MOCK_DL_MATCH_HISTORY = [
 
 MOCK_DL_RANK = {"badge": 93, "rank": 9, "subrank": 3, "last_match": None}
 
+MOCK_DL_LEADERBOARD = [
+    {
+        "account_name": f"Player{i}",
+        "possible_account_ids": [5000 + i],
+        "rank": i + 1,
+        "top_hero_ids": [1],
+    }
+    for i in range(9)
+] + [
+    {
+        "account_name": "Ambiguous",
+        "possible_account_ids": [9001, 9002],
+        "rank": 10,
+        "top_hero_ids": [2],
+    }
+]
+
+MOCK_DL_STEAM_SEARCH = [
+    {
+        "account_id": 9002,
+        "personaname": "Ambiguous",
+        "last_team_avg_badge": 50,
+        "matches_played_last_30d": 20,
+    }
+]
+
 
 @pytest.fixture
 def deadlock_api():
@@ -80,6 +106,12 @@ def deadlock_api():
         )
         router.get(url__regex=r"https://api\.deadlock-api\.com/v1/players/\d+/rank").mock(
             return_value=Response(200, json=MOCK_DL_RANK)
+        )
+        router.get(url__regex=r"https://api\.deadlock-api\.com/v1/leaderboard/\w+").mock(
+            return_value=Response(200, json={"entries": MOCK_DL_LEADERBOARD})
+        )
+        router.get("https://api.deadlock-api.com/v1/players/steam-search").mock(
+            return_value=Response(200, json=MOCK_DL_STEAM_SEARCH)
         )
         yield
     deadlock_client._cache.clear()
