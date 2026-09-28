@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
-import { fetchHeroItemStats, fetchHeroStats, fetchRanks } from "@/api";
-import type { HeroStat, ItemStat } from "@/api";
-import { percent } from "@/chartTheme";
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { fetchHeroItemStats, fetchHeroStats, fetchRankDistribution, fetchRanks } from "@/api";
+import type { HeroStat, ItemStat, RankShare } from "@/api";
+import { axisProps, CHART, percent } from "@/chartTheme";
+import ChartTooltip from "@/components/ChartTooltip";
 import GameIcon from "@/components/GameIcon";
 import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
 import { Input } from "@/components/ui/input";
@@ -233,6 +235,32 @@ function TierList({ heroes }: { heroes: HeroStat[] }) {
   );
 }
 
+function RankDistributionChart({ ranks }: { ranks: RankShare[] }) {
+  return (
+    <div className="h-64">
+      <ResponsiveContainer>
+        <BarChart data={ranks} margin={{ top: 12, right: 12, bottom: 0, left: -16 }}>
+          <CartesianGrid stroke={CHART.grid} vertical={false} />
+          <XAxis dataKey="rank" interval={0} angle={-35} textAnchor="end" height={56} {...axisProps} />
+          <YAxis domain={[0, "dataMax"]} tickFormatter={percent} {...axisProps} axisLine={false} />
+          <Tooltip
+            cursor={{ fill: CHART.grid }}
+            content={({ active, payload, label }) =>
+              active && payload?.length ? (
+                <ChartTooltip>
+                  <span className="text-foreground">{label}</span> ·{" "}
+                  <span className="font-mono tabular-nums">{percent(Number(payload[0].value))}</span> of players
+                </ChartTooltip>
+              ) : null
+            }
+          />
+          <Bar dataKey="share" fill={CHART.mark} radius={[3, 3, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
 function StatsPage() {
   const [params, setParams] = useSearchParams();
   const heroParam = params.get("hero");
@@ -248,6 +276,7 @@ function StatsPage() {
     () => (selectedHero ? fetchHeroItemStats(selectedHero) : Promise.resolve(null)),
     `items-${selectedHero}`,
   );
+  const rankDistribution = useAsync(fetchRankDistribution, "rank-distribution");
 
   return (
     <PageShell>
@@ -262,6 +291,12 @@ function StatsPage() {
       {heroes.data && (
         <Section title="Tier List" description="Heroes grouped by win rate, highest first">
           <TierList heroes={heroes.data.heroes} />
+        </Section>
+      )}
+
+      {rankDistribution.data && (
+        <Section title="Rank Distribution" description="Share of players at each ranked tier">
+          <RankDistributionChart ranks={rankDistribution.data.ranks} />
         </Section>
       )}
 

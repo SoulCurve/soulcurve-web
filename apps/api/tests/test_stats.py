@@ -77,6 +77,15 @@ def test_hero_stats_rejects_unknown_rank():
     assert response.status_code == 422
 
 
+def test_rank_distribution_shape():
+    response = client.get("/api/stats/rank-distribution")
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["ranks"]) == 12
+    assert body["ranks"][0]["rank"] == "Obscurus"
+    assert abs(sum(r["share"] for r in body["ranks"]) - 1.0) < 0.001
+
+
 def test_patch_summary_shape():
     response = client.get("/api/stats/patch-summary")
     assert response.status_code == 200

@@ -36,6 +36,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
 | `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
 | `GET /api/stats/patch-summary` | Biggest hero win-rate winners/losers vs. the previous patch |
+| `GET /api/stats/rank-distribution` | Share of players at each of the 12 ranked tiers |
 | `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |
 | `GET /api/blog` | Blog post list (summaries, no body) |
 | `GET /api/blog/{slug}` | A single blog post, full body |
@@ -94,7 +95,8 @@ both sides in sync in the same repo.
    client-side from the match history) and a recent match history list, each row
    linking to that match's analysis.
 5. **Stats (`/stats`):** hero win/pick rates (filterable by rank) with the item
-   breakdown for the selected hero, plus a win-rate-derived S/A/B/C/D tier list.
+   breakdown for the selected hero, a win-rate-derived S/A/B/C/D tier list, and a
+   rank distribution chart showing the share of players at each ranked tier.
 6. **Builds (`/builds`):** top-player item builds per hero, ranked by win rate.
 7. **Model (`/model`):** transparency page — model version, algorithm, accuracy/AUC-ROC/log
    loss metrics, and the input features it looks at. All values are placeholders until

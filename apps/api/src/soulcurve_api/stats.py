@@ -16,6 +16,8 @@ from soulcurve_api.models import (
     ItemStat,
     PatchChange,
     PatchSummaryResponse,
+    RankDistributionResponse,
+    RankShare,
 )
 
 router = APIRouter()
@@ -38,6 +40,23 @@ RANKS: list[str] = [
     "Phantom",
     "Ascendant",
     "Eternus",
+]
+
+# A rough bell curve over the 12 tiers, most players clustered in the middle
+# ranks and long tails at Obscurus and Eternus, summing to 1.0.
+_MOCK_RANK_SHARES: list[float] = [
+    0.02,
+    0.04,
+    0.07,
+    0.11,
+    0.14,
+    0.16,
+    0.15,
+    0.12,
+    0.09,
+    0.06,
+    0.03,
+    0.01,
 ]
 
 _MOCK_HEROES: list[HeroStat] = [
@@ -144,6 +163,16 @@ def patch_summary() -> PatchSummaryResponse:
         previous_patch=PREVIOUS_MOCK_PATCH,
         winners=ranked[:PATCH_SUMMARY_COUNT],
         losers=ranked[-PATCH_SUMMARY_COUNT:][::-1],
+    )
+
+
+@router.get("/api/stats/rank-distribution")
+def rank_distribution() -> RankDistributionResponse:
+    return RankDistributionResponse(
+        ranks=[
+            RankShare(rank=rank, share=share)
+            for rank, share in zip(RANKS, _MOCK_RANK_SHARES, strict=True)
+        ]
     )
 
 

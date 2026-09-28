@@ -167,3 +167,12 @@ class PatchSummaryResponse(BaseModel):
     previous_patch: str
     winners: list[PatchChange]
     losers: list[PatchChange]
+
+
+class RankShare(BaseModel):
+    rank: str
+    share: float
+
+
+class RankDistributionResponse(BaseModel):
+    ranks: list[RankShare]

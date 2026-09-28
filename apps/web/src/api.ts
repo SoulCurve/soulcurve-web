@@ -120,6 +120,23 @@ export async function fetchPatchSummary(): Promise<PatchSummaryResponse> {
   return response.json();
 }
 
+export interface RankShare {
+  rank: string;
+  share: number;
+}
+
+export interface RankDistributionResponse {
+  ranks: RankShare[];
+}
+
+export async function fetchRankDistribution(): Promise<RankDistributionResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/rank-distribution`);
+  if (!response.ok) {
+    throw new Error(`Failed to load rank distribution (${response.status})`);
+  }
+  return response.json();
+}
+
 export async function fetchRanks(): Promise<string[]> {
   const response = await fetch(`${API_BASE_URL}/api/stats/ranks`);
   if (!response.ok) {
