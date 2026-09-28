@@ -35,6 +35,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/stats/heroes/{hero_id}/items` | Item win/pick rates for a specific hero |
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
 | `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
+| `GET /api/stats/patch-summary` | Biggest hero win-rate winners/losers vs. the previous patch |
 | `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |
 | `GET /api/blog` | Blog post list (summaries, no body) |
 | `GET /api/blog/{slug}` | A single blog post, full body |
@@ -101,7 +102,9 @@ both sides in sync in the same repo.
 8. **Blog (`/blog` list, `/blog/:slug` detail):** long-form posts explaining how SoulCurve
    works (mistake scoring, the tier list, why the site launched on mock data); linked
    from the main nav.
-9. **News (`/news`) and FAQ (`/faq`).**
+9. **News (`/news`):** patch-notes/news feed, plus a patch winners/losers summary
+   (biggest hero win-rate swings vs. the previous patch) at the top.
+10. **FAQ (`/faq`).**
 
 ## Environment variables
 

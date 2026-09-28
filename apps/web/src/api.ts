@@ -97,6 +97,29 @@ export async function fetchHeroStats(rank?: string | null): Promise<HeroStatsRes
   return response.json();
 }
 
+export interface PatchChange {
+  hero_id: number;
+  name: string;
+  win_rate: number;
+  previous_win_rate: number;
+  delta: number;
+}
+
+export interface PatchSummaryResponse {
+  patch: string;
+  previous_patch: string;
+  winners: PatchChange[];
+  losers: PatchChange[];
+}
+
+export async function fetchPatchSummary(): Promise<PatchSummaryResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/patch-summary`);
+  if (!response.ok) {
+    throw new Error(`Failed to load patch summary (${response.status})`);
+  }
+  return response.json();
+}
+
 export async function fetchRanks(): Promise<string[]> {
   const response = await fetch(`${API_BASE_URL}/api/stats/ranks`);
   if (!response.ok) {

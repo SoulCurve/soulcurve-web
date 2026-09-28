@@ -75,3 +75,17 @@ def test_item_stats_shape():
 def test_hero_stats_rejects_unknown_rank():
     response = client.get("/api/stats/heroes", params={"rank": "Legendary"})
     assert response.status_code == 422
+
+
+def test_patch_summary_shape():
+    response = client.get("/api/stats/patch-summary")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["patch"]
+    assert body["previous_patch"]
+    assert len(body["winners"]) == 3
+    assert len(body["losers"]) == 3
+    for change in body["winners"]:
+        assert change["delta"] >= 0
+    for change in body["losers"]:
+        assert change["delta"] <= 0

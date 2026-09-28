@@ -14,11 +14,15 @@ from soulcurve_api.models import (
     HeroStatsResponse,
     ItemsResponse,
     ItemStat,
+    PatchChange,
+    PatchSummaryResponse,
 )
 
 router = APIRouter()
 
 MOCK_PATCH = "mock-patch-1.0"
+PREVIOUS_MOCK_PATCH = "mock-patch-0.9"
+PATCH_SUMMARY_COUNT = 3
 
 # Deadlock's ranked tiers (api.deadlock-api.com/v1/assets/ranks), low to high.
 RANKS: list[str] = [
@@ -116,6 +120,31 @@ def hero_stats(rank: str | None = None) -> HeroStatsResponse:
         raise HTTPException(status_code=422, detail="Unknown rank")
     heroes = _rank_adjusted_heroes(rank) if rank else _MOCK_HEROES
     return HeroStatsResponse(patch=MOCK_PATCH, rank=rank, heroes=heroes)
+
+
+@router.get("/api/stats/patch-summary")
+def patch_summary() -> PatchSummaryResponse:
+    changes = []
+    for hero in _MOCK_HEROES:
+        seed = int(hashlib.sha256(f"patch-delta:{hero.hero_id}".encode()).hexdigest(), 16)
+        delta = ((seed % 1200) - 600) / 10000  # +/-6pp
+        previous = round(min(0.75, max(0.25, hero.win_rate - delta)), 3)
+        changes.append(
+            PatchChange(
+                hero_id=hero.hero_id,
+                name=hero.name,
+                win_rate=hero.win_rate,
+                previous_win_rate=previous,
+                delta=round(hero.win_rate - previous, 3),
+            )
+        )
+    ranked = sorted(changes, key=lambda c: c.delta, reverse=True)
+    return PatchSummaryResponse(
+        patch=MOCK_PATCH,
+        previous_patch=PREVIOUS_MOCK_PATCH,
+        winners=ranked[:PATCH_SUMMARY_COUNT],
+        losers=ranked[-PATCH_SUMMARY_COUNT:][::-1],
+    )
 
 
 @router.get("/api/stats/items")

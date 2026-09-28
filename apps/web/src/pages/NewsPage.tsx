@@ -1,10 +1,30 @@
 import { useSearchParams } from "react-router-dom";
-import { fetchNews } from "@/api";
-import type { NewsItem } from "@/api";
-import { ErrorState, LoadingState, PageHeader, PageShell } from "@/components/site/primitives";
+import { fetchNews, fetchPatchSummary } from "@/api";
+import type { NewsItem, PatchChange } from "@/api";
+import { percent } from "@/chartTheme";
+import GameIcon from "@/components/GameIcon";
+import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAsync } from "@/lib/useAsync";
+import { cn } from "@/lib/utils";
+
+function PatchChangeRow({ change }: { change: PatchChange }) {
+  const up = change.delta >= 0;
+  return (
+    <li className="flex items-center justify-between gap-3 py-2.5">
+      <span className="flex items-center gap-2.5">
+        <GameIcon name={change.name} kind="hero" />
+        {change.name}
+      </span>
+      <span className={cn("font-mono text-sm tabular-nums", up ? "text-good" : "text-bad")}>
+        {up ? "+" : "−"}
+        {Math.abs(Math.round(change.delta * 100))}%{" "}
+        <span className="text-muted-foreground">({percent(change.win_rate)})</span>
+      </span>
+    </li>
+  );
+}
 
 const FILTERS = [
   { value: "all", label: "All" },
@@ -22,6 +42,7 @@ function NewsPage() {
   const filter = params.get("tag") ?? "all";
   const { data, error } = useAsync(fetchNews, "news");
   const items = data?.items.filter((item) => filter === "all" || item.tag === filter) ?? [];
+  const patchSummary = useAsync(fetchPatchSummary, "patch-summary");
 
   return (
     <PageShell>
@@ -49,6 +70,31 @@ function NewsPage() {
 
       {error && <ErrorState message={`${error}. Refresh to try again.`} />}
       {!data && !error && <LoadingState label="Loading news…" variant="list" />}
+
+      {patchSummary.data && (
+        <div className="grid gap-6 sm:grid-cols-2">
+          <Section
+            title="Patch Winners"
+            description={`${patchSummary.data.previous_patch} → ${patchSummary.data.patch}`}
+          >
+            <ul className="flex flex-col divide-y">
+              {patchSummary.data.winners.map((change) => (
+                <PatchChangeRow key={change.hero_id} change={change} />
+              ))}
+            </ul>
+          </Section>
+          <Section
+            title="Patch Losers"
+            description={`${patchSummary.data.previous_patch} → ${patchSummary.data.patch}`}
+          >
+            <ul className="flex flex-col divide-y">
+              {patchSummary.data.losers.map((change) => (
+                <PatchChangeRow key={change.hero_id} change={change} />
+              ))}
+            </ul>
+          </Section>
+        </div>
+      )}
 
       {data && items.length === 0 && (
         <p className="text-sm text-muted-foreground">Nothing here yet. Check back after the next patch.</p>

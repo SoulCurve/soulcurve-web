@@ -152,3 +152,18 @@ class BlogPost(BlogPostSummary):
 
 class BlogListResponse(BaseModel):
     posts: list[BlogPostSummary]
+
+
+class PatchChange(BaseModel):
+    hero_id: int
+    name: str
+    win_rate: float
+    previous_win_rate: float
+    delta: float
+
+
+class PatchSummaryResponse(BaseModel):
+    patch: str
+    previous_patch: str
+    winners: list[PatchChange]
+    losers: list[PatchChange]
