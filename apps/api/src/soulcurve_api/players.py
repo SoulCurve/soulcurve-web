@@ -34,7 +34,10 @@ STEAM64_ACCOUNT_ID_OFFSET = 76561197960265728
 
 
 def _account_id(steam_id: str) -> int:
-    return int(steam_id) - STEAM64_ACCOUNT_ID_OFFSET
+    try:
+        return int(steam_id) - STEAM64_ACCOUNT_ID_OFFSET
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Invalid Steam ID") from exc
 
 
 @router.get("/api/players/{steam_id}/matches")

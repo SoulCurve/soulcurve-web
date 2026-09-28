@@ -21,6 +21,16 @@ def test_player_matches_shape(deadlock_api):
     assert body["matches"][1]["result"] == "loss"
 
 
+def test_player_matches_rejects_non_numeric_steam_id():
+    response = client.get("/api/players/not-a-steam-id/matches")
+    assert response.status_code == 422
+
+
+def test_player_profile_rejects_non_numeric_steam_id():
+    response = client.get("/api/players/not-a-steam-id/profile")
+    assert response.status_code == 422
+
+
 def test_leaderboard_is_ordered_and_stable(deadlock_api):
     body = client.get("/api/leaderboard").json()
     players = body["players"]
