@@ -1,15 +1,18 @@
-"""Player match history.
+"""Player match history and profile.
 
-Will be replaced with real deadlock-api match history in M4; for now it
-generates deterministic mock matches per steam_id (stable across requests
-and reloads) so the frontend has something realistic to page through.
+Match history and rank/skill are live from deadlock-api.com, keyed off the
+player's Steam64 id converted to a Deadlock account_id. Leaderboard and
+per-category grades are still mock pending further integration.
 """
 
+import asyncio
 import hashlib
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 
-from fastapi import APIRouter
+import httpx
+from fastapi import APIRouter, HTTPException
 
+from soulcurve_api import deadlock_client
 from soulcurve_api.models import (
     LeaderboardPlayer,
     LeaderboardResponse,
@@ -25,35 +28,40 @@ router = APIRouter()
 
 MATCH_HISTORY_LENGTH = 10
 
+# Steam64 -> Steam32 (Deadlock's account_id) offset.
+STEAM64_ACCOUNT_ID_OFFSET = 76561197960265728
 
-def _mock_matches(steam_id: str) -> list[MatchSummary]:
-    now = datetime.now(UTC)
-    matches = []
-    for i in range(MATCH_HISTORY_LENGTH):
-        seed = int(hashlib.sha256(f"{steam_id}:{i}".encode()).hexdigest(), 16)
-        hero = _MOCK_HEROES[seed % len(_MOCK_HEROES)]
-        matches.append(
-            MatchSummary(
-                match_id=1000 + (seed % 9000),
-                hero_id=hero.hero_id,
-                hero_name=hero.name,
-                result="win" if seed % 2 == 0 else "loss",
-                kills=seed % 15,
-                deaths=(seed // 15) % 12,
-                assists=(seed // 180) % 20,
-                duration_min=22 + (seed % 25),
-                played_at=(now - timedelta(hours=i * 7 + (seed % 5))).date().isoformat(),
-            )
-        )
-    return matches
+
+def _account_id(steam_id: str) -> int:
+    return int(steam_id) - STEAM64_ACCOUNT_ID_OFFSET
 
 
 @router.get("/api/players/{steam_id}/matches")
-def player_matches(steam_id: str) -> PlayerMatchesResponse:
+async def player_matches(steam_id: str) -> PlayerMatchesResponse:
+    try:
+        rows, hero_names = await asyncio.gather(
+            deadlock_client.fetch_match_history(_account_id(steam_id)),
+            deadlock_client.fetch_heroes(),
+        )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+
+    matches = [
+        MatchSummary(
+            match_id=row["match_id"],
+            hero_id=row["hero_id"],
+            hero_name=hero_names.get(row["hero_id"], "Unknown"),
+            result="win" if row["player_team"] == row["match_result"] else "loss",
+            kills=row["player_kills"],
+            deaths=row["player_deaths"],
+            assists=row["player_assists"],
+            duration_min=round(row["match_duration_s"] / 60),
+            played_at=datetime.fromtimestamp(row["start_time"], tz=UTC).date().isoformat(),
+        )
+        for row in rows[:MATCH_HISTORY_LENGTH]
+    ]
     names = {p.steam_id: p.name for p in leaderboard().players}
-    return PlayerMatchesResponse(
-        steam_id=steam_id, name=names.get(steam_id), matches=_mock_matches(steam_id)
-    )
+    return PlayerMatchesResponse(steam_id=steam_id, name=names.get(steam_id), matches=matches)
 
 
 LEADERBOARD_SIZE = 10
@@ -134,13 +142,19 @@ def _letter(score: float) -> str:
     return next((letter for floor, letter in _GRADE_BANDS if score >= floor), "F")
 
 
+MAX_BADGE = 116  # highest tier (Eternus=11) * 10 + highest subrank (6)
+
+
 @router.get("/api/players/{steam_id}/profile")
-def player_profile(steam_id: str) -> PlayerProfileResponse:
-    # ponytail: rating is seeded per player; the real estimate comes from match results in M4.
-    # Leaderboard players keep their leaderboard rating so the two pages agree.
-    ratings = {p.steam_id: p.rating for p in leaderboard().players}
-    rating = ratings.get(steam_id, 1200 + _seed(f"rating:{steam_id}") % 2800)
-    percentile = round(min(0.999, (rating - 1200) / 3000), 3)
+async def player_profile(steam_id: str) -> PlayerProfileResponse:
+    try:
+        rank_data = await deadlock_client.fetch_rank(_account_id(steam_id))
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+
+    badge = rank_data.get("badge") or 0
+    rating = 1000 + badge * 30
+    percentile = round(min(0.999, badge / MAX_BADGE), 3)
 
     # Grades lean on the rating so a top player doesn't show a wall of Ds, plus per-category noise.
     grades = []

@@ -30,6 +30,33 @@ MOCK_DL_ITEM_STATS = [
     {"item_id": 1004, "wins": 5, "losses": 5, "matches": 10},
 ]
 
+MOCK_DL_MATCH_HISTORY = [
+    {
+        "match_id": 111,
+        "hero_id": 1,
+        "player_team": 0,
+        "match_result": 0,
+        "player_kills": 10,
+        "player_deaths": 2,
+        "player_assists": 5,
+        "match_duration_s": 1200,
+        "start_time": 1700000000,
+    },
+    {
+        "match_id": 112,
+        "hero_id": 2,
+        "player_team": 1,
+        "match_result": 0,
+        "player_kills": 3,
+        "player_deaths": 8,
+        "player_assists": 2,
+        "match_duration_s": 1500,
+        "start_time": 1700003600,
+    },
+]
+
+MOCK_DL_RANK = {"badge": 93, "rank": 9, "subrank": 3, "last_match": None}
+
 
 @pytest.fixture
 def deadlock_api():
@@ -47,6 +74,12 @@ def deadlock_api():
         )
         router.get("https://api.deadlock-api.com/v1/analytics/item-stats").mock(
             return_value=Response(200, json=MOCK_DL_ITEM_STATS)
+        )
+        router.get(url__regex=r"https://api\.deadlock-api\.com/v1/players/\d+/match-history").mock(
+            return_value=Response(200, json=MOCK_DL_MATCH_HISTORY)
+        )
+        router.get(url__regex=r"https://api\.deadlock-api\.com/v1/players/\d+/rank").mock(
+            return_value=Response(200, json=MOCK_DL_RANK)
         )
         yield
     deadlock_client._cache.clear()

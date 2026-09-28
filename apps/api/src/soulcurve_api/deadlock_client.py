@@ -54,6 +54,14 @@ async def fetch_items() -> dict[int, str]:
     return {i["id"]: i["name"] for i in items if i.get("shopable")}
 
 
+async def fetch_match_history(account_id: int) -> list[dict]:
+    return await _get(f"/v1/players/{account_id}/match-history", {}, _HERO_STATS_TTL_S)
+
+
+async def fetch_rank(account_id: int) -> dict:
+    return await _get(f"/v1/players/{account_id}/rank", {}, _HERO_STATS_TTL_S)
+
+
 async def fetch_item_stats(
     hero_id: int, min_badge: int | None = None, max_badge: int | None = None
 ) -> list[dict]:
