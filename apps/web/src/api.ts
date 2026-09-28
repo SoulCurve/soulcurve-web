@@ -214,6 +214,7 @@ export interface MatchSummary {
 
 export interface PlayerMatchesResponse {
   steam_id: string;
+  name: string | null;
   matches: MatchSummary[];
 }
 

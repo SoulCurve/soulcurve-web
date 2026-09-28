@@ -106,6 +106,7 @@ class MatchSummary(BaseModel):
 
 class PlayerMatchesResponse(BaseModel):
     steam_id: str
+    name: str | None = None
     matches: list[MatchSummary]
 
 

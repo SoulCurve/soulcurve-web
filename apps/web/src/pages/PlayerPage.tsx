@@ -50,7 +50,7 @@ function PlayerPage() {
         New Search
       </Link>
       <PageHeader
-        title={<span translate="no">Player {steamId}</span>}
+        title={<span translate="no">{matches.data?.name ?? `Player ${steamId}`}</span>}
         actions={
           <Button
             variant={followed ? "outline" : "default"}

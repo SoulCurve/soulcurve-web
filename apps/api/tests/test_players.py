@@ -32,3 +32,9 @@ def test_leaderboard_is_ordered_and_stable():
     ratings = [p["rating"] for p in players]
     assert ratings == sorted(ratings, reverse=True)
     assert client.get("/api/leaderboard").json() == body
+
+
+def test_player_matches_names_leaderboard_players():
+    top = client.get("/api/leaderboard").json()["players"][0]
+    assert client.get(f"/api/players/{top['steam_id']}/matches").json()["name"] == top["name"]
+    assert client.get("/api/players/1/matches").json()["name"] is None

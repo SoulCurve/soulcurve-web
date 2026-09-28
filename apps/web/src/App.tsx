@@ -14,6 +14,7 @@ import EffectsLabPage from "@/pages/lab/EffectsLabPage";
 import MatchPage from "@/pages/MatchPage";
 import ModelPage from "@/pages/ModelPage";
 import NewsPage from "@/pages/NewsPage";
+import NotFoundPage from "@/pages/NotFoundPage";
 import PlayerPage from "@/pages/PlayerPage";
 import StatsPage from "@/pages/StatsPage";
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/following" element={<FollowingPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/lab/effects" element={<EffectsLabPage />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </div>
       <footer className="border-t">

@@ -45,7 +45,7 @@ _MOCK_MODEL_INFO = ModelInfoResponse(
         "SoulCurve's win-probability curve comes from a model trained to predict, at "
         "every point in a match, which team is more likely to win the game. Every number "
         "on this page is a placeholder: the real model, trained on real Deadlock match "
-        "data, lands in a later milestone (see docs/ARCHITECTURE.md). Until then, match "
+        "data, lands in a later milestone. Until then, match "
         "pages show a fixed mock curve so the rest of the product can be built and used "
         "against a stable contract."
     ),

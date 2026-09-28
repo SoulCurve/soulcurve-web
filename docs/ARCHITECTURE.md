@@ -32,7 +32,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/matches/{match_id}/analysis` | Per-player WPA-style mistake analysis (0–10 score + flagged moments) |
 | `GET /api/map/box-routes` | Breakable crate positions/timers and each team's optimal crate loop (exact shortest base-to-base order) vs. the greedy nearest-crate loop |
 | `GET /api/leaderboard` | Top-rated players (mock, fictional handles until M4) |
-| `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration) |
+| `GET /api/players/{steam_id}/matches` | A player's recent match history (hero, result, KDA, duration), plus their name when they're on the leaderboard |
 | `GET /api/stats/ranks` | The 12 Deadlock ranked tiers |
 | `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank |
 | `GET /api/stats/heroes/{hero_id}/items` | Item win/pick rates for a specific hero |
