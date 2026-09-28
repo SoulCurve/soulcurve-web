@@ -294,6 +294,13 @@ function HomePage() {
           </ul>
         </Section>
       </div>
+
+      <p className="pb-2 text-center text-sm text-muted-foreground">
+        Curious how the win probability model works?{" "}
+        <Link to="/model" className="text-soul hover:underline">
+          See the model
+        </Link>
+      </p>
     </PageShell>
   );
 }

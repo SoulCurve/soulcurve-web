@@ -6,6 +6,7 @@ import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
 import MatchPage from "@/pages/MatchPage";
+import ModelPage from "@/pages/ModelPage";
 import NewsPage from "@/pages/NewsPage";
 import PlayerPage from "@/pages/PlayerPage";
 import StatsPage from "@/pages/StatsPage";
@@ -29,6 +30,7 @@ function App() {
           <Route path="/player/:steamId" element={<PlayerPage />} />
           <Route path="/stats" element={<StatsPage />} />
           <Route path="/builds" element={<BuildsPage />} />
+          <Route path="/model" element={<ModelPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>

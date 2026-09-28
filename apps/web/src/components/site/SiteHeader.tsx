@@ -6,6 +6,7 @@ import BrandMark from "@/components/BrandMark";
 const NAV = [
   { to: "/stats", label: "Stats" },
   { to: "/builds", label: "Builds" },
+  { to: "/model", label: "Model" },
   { to: "/news", label: "News" },
   { to: "/faq", label: "FAQ" },
 ];

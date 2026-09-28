@@ -35,6 +35,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/stats/heroes/{hero_id}/items` | Item win/pick rates for a specific hero |
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
 | `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
+| `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |
 | `GET /api/news` | News / patch-notes feed |
 | `GET /api/me`, `GET /auth/steam/login`, `POST /auth/logout` | Steam OpenID session |
 
@@ -91,7 +92,10 @@ both sides in sync in the same repo.
 5. **Stats (`/stats`):** hero win/pick rates (filterable by rank) with the item
    breakdown for the selected hero, plus a win-rate-derived S/A/B/C/D tier list.
 6. **Builds (`/builds`):** top-player item builds per hero, ranked by win rate.
-7. **News (`/news`) and FAQ (`/faq`).**
+7. **Model (`/model`):** transparency page — model version, algorithm, accuracy/AUC-ROC/log
+   loss metrics, and the input features it looks at. All values are placeholders until
+   the real model lands in M4; linked from the home page and the main nav.
+8. **News (`/news`) and FAQ (`/faq`).**
 
 ## Environment variables
 

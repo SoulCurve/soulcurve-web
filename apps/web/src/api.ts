@@ -185,6 +185,31 @@ export async function fetchPlayerMatches(steamId: string): Promise<PlayerMatches
   return response.json();
 }
 
+export interface ModelMetric {
+  label: string;
+  value: string;
+  description: string;
+}
+
+export interface ModelInfoResponse {
+  model_version: string;
+  trained_at: string;
+  training_matches: number;
+  training_patch_range: string;
+  algorithm: string;
+  metrics: ModelMetric[];
+  features: string[];
+  summary: string;
+}
+
+export async function fetchModelInfo(): Promise<ModelInfoResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/model`);
+  if (!response.ok) {
+    throw new Error(`Failed to load model info (${response.status})`);
+  }
+  return response.json();
+}
+
 export interface NewsItem {
   id: number;
   title: string;

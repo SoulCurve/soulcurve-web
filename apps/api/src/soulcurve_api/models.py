@@ -109,6 +109,23 @@ class PlayerMatchesResponse(BaseModel):
     matches: list[MatchSummary]
 
 
+class ModelMetric(BaseModel):
+    label: str
+    value: str
+    description: str
+
+
+class ModelInfoResponse(BaseModel):
+    model_version: str
+    trained_at: str
+    training_matches: int
+    training_patch_range: str
+    algorithm: str
+    metrics: list[ModelMetric]
+    features: list[str]
+    summary: str
+
+
 class NewsItem(BaseModel):
     id: int
     title: str
