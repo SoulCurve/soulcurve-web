@@ -110,6 +110,12 @@ def deadlock_api():
         router.get(url__regex=r"https://api\.deadlock-api\.com/v1/leaderboard/\w+").mock(
             return_value=Response(200, json={"entries": MOCK_DL_LEADERBOARD})
         )
+        router.get(
+            "https://api.deadlock-api.com/v1/players/steam-search",
+            params={"search_query": "nonexistent-player", "limit": "15"},
+        ).mock(
+            return_value=Response(404, json={"status": 404, "error": "No Steam profiles found."})
+        )
         router.get("https://api.deadlock-api.com/v1/players/steam-search").mock(
             return_value=Response(200, json=MOCK_DL_STEAM_SEARCH)
         )

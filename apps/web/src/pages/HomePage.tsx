@@ -99,16 +99,18 @@ function SampleMatch() {
 }
 
 const SEARCH_MODES = {
-  player: { label: "Player", placeholder: "Steam ID or profile URL…" },
+  player: { label: "Player", placeholder: "Steam ID, name, or profile URL…" },
   match: { label: "Match", placeholder: "Match ID…" },
 } as const;
 
 type SearchMode = keyof typeof SEARCH_MODES;
 
-// Accepts a bare ID or a steamcommunity.com/profiles/<id> URL.
+// Accepts a bare ID/name, a steamcommunity.com/profiles/<id> URL, or a
+// steamcommunity.com/id/<name> custom URL. The backend resolves a non-numeric
+// value (name or custom URL slug) to an account via deadlock-api's steam-search.
 function parseQuery(raw: string) {
-  const trimmed = raw.trim();
-  return trimmed.match(/profiles\/(\d+)/)?.[1] ?? trimmed;
+  const trimmed = raw.trim().replace(/\/+$/, "");
+  return trimmed.match(/profiles\/(\d+)/)?.[1] ?? trimmed.match(/\/id\/([^/]+)/)?.[1] ?? trimmed;
 }
 
 function SearchBar() {

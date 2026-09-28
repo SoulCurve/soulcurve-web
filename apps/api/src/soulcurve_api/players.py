@@ -33,22 +33,31 @@ MATCH_HISTORY_LENGTH = 10
 STEAM64_ACCOUNT_ID_OFFSET = 76561197960265728
 
 
-def _account_id(steam_id: str) -> int:
-    try:
+async def _account_id(steam_id: str) -> int:
+    """Steam64 id -> Deadlock account_id.
+
+    A non-numeric value (a Steam custom URL name, e.g. what "steamcommunity.com/id/<name>"
+    ends in) is resolved via deadlock-api's steam-search instead of rejected outright.
+    """
+    if steam_id.isdigit():
         return int(steam_id) - STEAM64_ACCOUNT_ID_OFFSET
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail="Invalid Steam ID") from exc
+    profiles = await deadlock_client.steam_search(steam_id)
+    if not profiles:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return profiles[0]["account_id"]
 
 
 @router.get("/api/players/{steam_id}/matches")
 async def player_matches(steam_id: str) -> PlayerMatchesResponse:
     try:
+        account_id = await _account_id(steam_id)
         rows, hero_names = await asyncio.gather(
-            deadlock_client.fetch_match_history(_account_id(steam_id)),
+            deadlock_client.fetch_match_history(account_id),
             deadlock_client.fetch_heroes(),
         )
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+    steam_id = str(account_id + STEAM64_ACCOUNT_ID_OFFSET)
 
     matches = [
         MatchSummary(
@@ -177,9 +186,11 @@ MAX_BADGE = 116  # highest tier (Eternus=11) * 10 + highest subrank (6)
 @router.get("/api/players/{steam_id}/profile")
 async def player_profile(steam_id: str) -> PlayerProfileResponse:
     try:
-        rank_data = await deadlock_client.fetch_rank(_account_id(steam_id))
+        account_id = await _account_id(steam_id)
+        rank_data = await deadlock_client.fetch_rank(account_id)
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+    steam_id = str(account_id + STEAM64_ACCOUNT_ID_OFFSET)
 
     badge = rank_data.get("badge") or 0
     rating = 1000 + badge * 30
