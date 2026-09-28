@@ -107,9 +107,12 @@ both sides in sync in the same repo.
 8. **Blog (`/blog` list, `/blog/:slug` detail):** long-form posts explaining how SoulCurve
    works (mistake scoring, the tier list, why the site launched on mock data); linked
    from the main nav.
-9. **News (`/news`):** patch-notes/news feed, plus a patch winners/losers summary
+9. **Following (`/following`):** players you follow (Follow button on the player page),
+   each with their last 5 results and win rate. Stored in the browser (`localStorage`)
+   until accounts get server-side storage in Neon.
+10. **News (`/news`):** patch-notes/news feed, plus a patch winners/losers summary
    (biggest hero win-rate swings vs. the previous patch) at the top.
-10. **FAQ (`/faq`).**
+11. **FAQ (`/faq`).**
 
 ## Environment variables
 

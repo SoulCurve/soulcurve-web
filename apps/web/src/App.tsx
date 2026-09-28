@@ -4,6 +4,7 @@ import SiteHeader from "@/components/site/SiteHeader";
 import AnalysisPage from "@/pages/AnalysisPage";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
+import FollowingPage from "@/pages/FollowingPage";
 import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
@@ -36,6 +37,7 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/following" element={<FollowingPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>
       </div>

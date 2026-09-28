@@ -1,10 +1,12 @@
 import { Link, useParams } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, UserCheck, UserPlus } from "lucide-react";
 import { fetchPlayerMatches } from "@/api";
 import type { MatchSummary } from "@/api";
 import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
 import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { Button } from "@/components/ui/button";
+import { useFollowing } from "@/lib/following";
 import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +37,8 @@ function PlayerPage() {
   const { steamId = "" } = useParams<{ steamId: string }>();
   const matches = useAsync(() => fetchPlayerMatches(steamId), `player-matches-${steamId}`);
   const pool = matches.data ? heroPool(matches.data.matches) : [];
+  const following = useFollowing();
+  const followed = following.isFollowing(steamId);
 
   return (
     <PageShell>
@@ -45,7 +49,19 @@ function PlayerPage() {
         <ChevronLeft className="size-4" aria-hidden="true" />
         New Search
       </Link>
-      <PageHeader title={<span translate="no">Player {steamId}</span>} />
+      <PageHeader
+        title={<span translate="no">Player {steamId}</span>}
+        actions={
+          <Button
+            variant={followed ? "outline" : "default"}
+            onClick={() => following.toggle(steamId)}
+            aria-pressed={followed}
+          >
+            {followed ? <UserCheck /> : <UserPlus />}
+            {followed ? "Following" : "Follow"}
+          </Button>
+        }
+      />
 
       {matches.error && <ErrorState message={`${matches.error}. Check the Steam ID and try again.`} />}
 
