@@ -190,6 +190,49 @@ function RankSelect({ value, onChange }: { value: string; onChange: (rank: strin
   );
 }
 
+const TIERS = [
+  { key: "S", label: "S Tier", min: 0.54, className: "border-soul/40 bg-soul-dim text-soul" },
+  { key: "A", label: "A Tier", min: 0.51, className: "border-good/30 bg-good/10 text-good" },
+  { key: "B", label: "B Tier", min: 0.48, className: "border-border bg-muted/40 text-foreground" },
+  { key: "C", label: "C Tier", min: 0.45, className: "border-border bg-muted/20 text-muted-foreground" },
+  { key: "D", label: "D Tier", min: 0, className: "border-bad/30 bg-bad/10 text-bad" },
+] as const;
+
+function tierFor(winRate: number) {
+  return TIERS.find((tier) => winRate >= tier.min) ?? TIERS[TIERS.length - 1];
+}
+
+function TierList({ heroes }: { heroes: HeroStat[] }) {
+  const byTier = TIERS.map((tier) => ({
+    tier,
+    heroes: heroes.filter((h) => tierFor(h.win_rate).key === tier.key).sort((a, b) => b.win_rate - a.win_rate),
+  })).filter((group) => group.heroes.length > 0);
+
+  return (
+    <div className="flex flex-col gap-2">
+      {byTier.map(({ tier, heroes: tierHeroes }) => (
+        <div key={tier.key} className={cn("flex items-stretch gap-3 rounded-lg border", tier.className)}>
+          <div className="flex w-14 shrink-0 items-center justify-center font-mono text-lg font-semibold">
+            {tier.key}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-l border-inherit py-2 pr-3">
+            {tierHeroes.map((hero) => (
+              <span
+                key={hero.hero_id}
+                className="flex items-center gap-1.5 rounded-md border bg-card px-2 py-1 text-xs text-foreground"
+              >
+                <GameIcon name={hero.name} kind="hero" className="size-5" />
+                {hero.name}
+                <span className="font-mono text-muted-foreground tabular-nums">{percent(hero.win_rate)}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function StatsPage() {
   const [params, setParams] = useSearchParams();
   const heroParam = params.get("hero");
@@ -215,6 +258,12 @@ function StatsPage() {
 
       {heroes.error && <ErrorState message={`${heroes.error}. Refresh to try again.`} />}
       {!heroes.data && !heroes.error && <LoadingState label="Loading stats…" variant="rows" />}
+
+      {heroes.data && (
+        <Section title="Tier List" description="Heroes grouped by win rate, highest first">
+          <TierList heroes={heroes.data.heroes} />
+        </Section>
+      )}
 
       {heroes.data && (
         <div className="grid gap-6 xl:grid-cols-2">
