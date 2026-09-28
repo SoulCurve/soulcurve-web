@@ -3,7 +3,7 @@ import { ChevronDown } from "lucide-react";
 import { fetchHeroBuilds, fetchHeroStats } from "@/api";
 import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
-import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { ErrorState, LoadingState, PageHeader, PageShell, RankSelect, Section } from "@/components/site/primitives";
 import { useAsync } from "@/lib/useAsync";
 
 function HeroSelect({ value, onChange }: { value: number | null; onChange: (heroId: number) => void }) {
@@ -33,22 +33,34 @@ function HeroSelect({ value, onChange }: { value: number | null; onChange: (hero
 function BuildsPage() {
   const [params, setParams] = useSearchParams();
   const heroId = params.get("hero") ? Number(params.get("hero")) : 1;
-  const builds = useAsync(() => fetchHeroBuilds(heroId), `builds-${heroId}`);
+  const rank = params.get("rank") ?? "";
+  const builds = useAsync(() => fetchHeroBuilds(heroId, rank || null), `builds-${heroId}-${rank}`);
 
   return (
     <PageShell>
       <PageHeader
         title="Builds"
-        description="The highest win-rate item builds from top players, per hero."
+        description={`The highest win-rate item builds from top players, per hero${rank ? ` · ${rank} rank` : ""}.`}
         actions={
-          <HeroSelect
-            value={heroId}
-            onChange={(next) => {
-              const nextParams = new URLSearchParams(params);
-              nextParams.set("hero", String(next));
-              setParams(nextParams, { replace: true });
-            }}
-          />
+          <div className="flex gap-2">
+            <RankSelect
+              value={rank}
+              onChange={(next) => {
+                const nextParams = new URLSearchParams(params);
+                if (next) nextParams.set("rank", next);
+                else nextParams.delete("rank");
+                setParams(nextParams, { replace: true });
+              }}
+            />
+            <HeroSelect
+              value={heroId}
+              onChange={(next) => {
+                const nextParams = new URLSearchParams(params);
+                nextParams.set("hero", String(next));
+                setParams(nextParams, { replace: true });
+              }}
+            />
+          </div>
         }
       />
 

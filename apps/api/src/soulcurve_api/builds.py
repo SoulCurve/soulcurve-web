@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException
 
 from soulcurve_api.models import Build, HeroBuildsResponse
 from soulcurve_api.players import _LEADERBOARD_NAMES
-from soulcurve_api.stats import _MOCK_HEROES, _MOCK_ITEMS, MOCK_PATCH
+from soulcurve_api.stats import _MOCK_HEROES, _MOCK_ITEMS, MOCK_PATCH, RANKS
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ BUILD_ITEM_COUNT = 4
 BUILDS_PER_HERO = 3
 
 
-def _mock_builds(hero_id: int) -> list[Build]:
+def _mock_builds(hero_id: int, rank: str | None) -> list[Build]:
     builds = []
     for i in range(BUILDS_PER_HERO):
         seed = int(hashlib.sha256(f"build:{hero_id}:{i}".encode()).hexdigest(), 16)
@@ -28,12 +28,17 @@ def _mock_builds(hero_id: int) -> list[Build]:
         for slot in range(BUILD_ITEM_COUNT):
             index = (seed >> (slot * 8)) % len(item_pool)
             picked.append(item_pool.pop(index).name)
+        win_rate = 0.64 - i * 0.035 - (seed % 100) / 5000
+        if rank:
+            key = f"build-rank:{rank}:{hero_id}:{i}"
+            rank_seed = int(hashlib.sha256(key.encode()).hexdigest(), 16)
+            win_rate += ((rank_seed % 800) - 400) / 10000  # +/-4pp
         builds.append(
             Build(
                 build_id=hero_id * 10 + i,
                 author=_LEADERBOARD_NAMES[(hero_id + i * 3) % len(_LEADERBOARD_NAMES)],
                 items=picked,
-                win_rate=round(0.64 - i * 0.035 - (seed % 100) / 5000, 3),
+                win_rate=round(min(0.85, max(0.3, win_rate)), 3),
                 games=200 - i * 40 + (seed % 50),
             )
         )
@@ -41,13 +46,16 @@ def _mock_builds(hero_id: int) -> list[Build]:
 
 
 @router.get("/api/stats/heroes/{hero_id}/builds")
-def hero_builds(hero_id: int) -> HeroBuildsResponse:
+def hero_builds(hero_id: int, rank: str | None = None) -> HeroBuildsResponse:
     hero = next((h for h in _MOCK_HEROES if h.hero_id == hero_id), None)
     if hero is None:
         raise HTTPException(status_code=404, detail="Hero not found")
+    if rank is not None and rank not in RANKS:
+        raise HTTPException(status_code=422, detail="Unknown rank")
     return HeroBuildsResponse(
         patch=MOCK_PATCH,
         hero_id=hero.hero_id,
         hero_name=hero.name,
-        builds=_mock_builds(hero_id),
+        rank=rank,
+        builds=_mock_builds(hero_id, rank),
     )

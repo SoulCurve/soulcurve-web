@@ -166,11 +166,13 @@ export interface HeroBuildsResponse {
   patch: string;
   hero_id: number;
   hero_name: string;
+  rank: string | null;
   builds: Build[];
 }
 
-export async function fetchHeroBuilds(heroId: number): Promise<HeroBuildsResponse> {
-  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/builds`);
+export async function fetchHeroBuilds(heroId: number, rank?: string | null): Promise<HeroBuildsResponse> {
+  const query = rank ? `?rank=${encodeURIComponent(rank)}` : "";
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/builds${query}`);
   if (!response.ok) {
     throw new Error(`Failed to load builds (${response.status})`);
   }

@@ -1,8 +1,35 @@
 import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
-import { ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, ChevronDown } from "lucide-react";
+import { fetchRanks } from "@/api";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
+
+export function RankSelect({ value, onChange }: { value: string; onChange: (rank: string) => void }) {
+  const ranks = useAsync(fetchRanks, "ranks");
+  return (
+    <div className="relative">
+      <select
+        aria-label="Filter by rank"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="h-9 w-full cursor-pointer appearance-none rounded-md border bg-card py-1.5 pr-8 pl-3 text-sm outline-none focus-visible:border-soul/60 sm:w-40"
+      >
+        <option value="">All Ranks</option>
+        {ranks.data?.map((rank) => (
+          <option key={rank} value={rank}>
+            {rank}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
 
 export function PageShell({ children }: { children: ReactNode }) {
   return (
@@ -163,5 +190,15 @@ export function ErrorState({ message }: { message: string }) {
     <p role="alert" className="rounded-lg border border-bad/30 bg-bad/10 px-4 py-3 text-sm text-bad">
       {message}
     </p>
+  );
+}
+
+export function EmptyState({ title, description, action }: { title: string; description?: ReactNode; action?: ReactNode }) {
+  return (
+    <div className="deco-frame flex flex-col items-center gap-2 rounded-lg border bg-card px-6 py-14 text-center">
+      <p className="text-sm font-medium">{title}</p>
+      {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
+      {action}
+    </div>
   );
 }

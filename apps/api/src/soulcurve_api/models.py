@@ -73,6 +73,7 @@ class HeroBuildsResponse(BaseModel):
     patch: str
     hero_id: int
     hero_name: str
+    rank: str | None = None
     builds: list[Build]
 
 

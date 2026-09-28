@@ -36,3 +36,14 @@ def test_build_authors_are_leaderboard_players():
     authors = [b["author"] for b in client.get("/api/stats/heroes/1/builds").json()["builds"]]
     assert set(authors) <= names
     assert len(set(authors)) == len(authors)
+
+
+def test_hero_builds_rank_filter():
+    base = client.get("/api/stats/heroes/1/builds").json()
+    ranked = client.get("/api/stats/heroes/1/builds", params={"rank": "Eternus"}).json()
+    assert ranked["rank"] == "Eternus"
+    assert base["rank"] is None
+    assert [b["win_rate"] for b in ranked["builds"]] != [b["win_rate"] for b in base["builds"]]
+
+    bad = client.get("/api/stats/heroes/1/builds", params={"rank": "Nope"})
+    assert bad.status_code == 422

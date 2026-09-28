@@ -2,12 +2,12 @@ import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { ChevronDown, ChevronUp, ChevronsUpDown, Search } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { fetchHeroItemStats, fetchHeroStats, fetchRankDistribution, fetchRanks } from "@/api";
+import { fetchHeroItemStats, fetchHeroStats, fetchRankDistribution } from "@/api";
 import type { HeroStat, ItemStat, RankShare } from "@/api";
 import { axisProps, CHART, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import GameIcon from "@/components/GameIcon";
-import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { ErrorState, LoadingState, PageHeader, PageShell, RankSelect, Section } from "@/components/site/primitives";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { AssetKind } from "@/lib/gameAssets";
@@ -164,31 +164,6 @@ function RateTable<T extends HeroStat | ItemStat>({
         })}
       </TableBody>
     </Table>
-  );
-}
-
-function RankSelect({ value, onChange }: { value: string; onChange: (rank: string) => void }) {
-  const ranks = useAsync(fetchRanks, "ranks");
-  return (
-    <div className="relative">
-      <select
-        aria-label="Filter by rank"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-9 w-full cursor-pointer appearance-none rounded-md border bg-card py-1.5 pr-8 pl-3 text-sm outline-none focus-visible:border-soul/60 sm:w-40"
-      >
-        <option value="">All Ranks</option>
-        {ranks.data?.map((rank) => (
-          <option key={rank} value={rank}>
-            {rank}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute top-1/2 right-2.5 size-3.5 -translate-y-1/2 text-muted-foreground"
-        aria-hidden="true"
-      />
-    </div>
   );
 }
 
