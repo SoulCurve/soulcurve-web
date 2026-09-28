@@ -273,8 +273,8 @@ function StatsPage() {
       ? [...heroes.data.heroes].sort((a, b) => b.win_rate - a.win_rate)[0]?.hero_id
       : null;
   const items = useAsync(
-    () => (selectedHero ? fetchHeroItemStats(selectedHero) : Promise.resolve(null)),
-    `items-${selectedHero}`,
+    () => (selectedHero ? fetchHeroItemStats(selectedHero, rank || null) : Promise.resolve(null)),
+    `items-${selectedHero}-${rank}`,
   );
   const rankDistribution = useAsync(fetchRankDistribution, "rank-distribution");
 
@@ -350,7 +350,7 @@ function StatsPage() {
 
           <Section
             title={items.data ? `${items.data.hero_name} · Items` : "Items"}
-            description="Win rate in games where the item was bought"
+            description={`Win rate in games where the item was bought${rank ? ` · ${rank} rank` : ""}`}
             className="lg:self-start"
           >
             {items.error && <ErrorState message={items.error} />}

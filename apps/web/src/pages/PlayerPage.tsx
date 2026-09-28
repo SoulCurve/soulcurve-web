@@ -1,10 +1,10 @@
 import { Link, useParams } from "react-router-dom";
-import { ChevronLeft, UserCheck, UserPlus } from "lucide-react";
-import { fetchPlayerMatches } from "@/api";
+import { ArrowDownRight, ArrowUpRight, ChevronLeft, UserCheck, UserPlus } from "lucide-react";
+import { fetchPlayerMatches, fetchPlayerProfile } from "@/api";
 import type { MatchSummary } from "@/api";
 import { percent } from "@/chartTheme";
 import GameIcon from "@/components/GameIcon";
-import { ErrorState, LoadingState, PageHeader, PageShell, Section } from "@/components/site/primitives";
+import { ErrorState, LoadingState, PageHeader, PageShell, Section, Stat } from "@/components/site/primitives";
 import { Button } from "@/components/ui/button";
 import { useFollowing } from "@/lib/following";
 import { useAsync } from "@/lib/useAsync";
@@ -36,6 +36,7 @@ function heroPool(matches: MatchSummary[]): HeroPoolEntry[] {
 function PlayerPage() {
   const { steamId = "" } = useParams<{ steamId: string }>();
   const matches = useAsync(() => fetchPlayerMatches(steamId), `player-matches-${steamId}`);
+  const profile = useAsync(() => fetchPlayerProfile(steamId), `player-profile-${steamId}`);
   const pool = matches.data ? heroPool(matches.data.matches) : [];
   const following = useFollowing();
   const followed = following.isFollowing(steamId);
@@ -64,6 +65,54 @@ function PlayerPage() {
       />
 
       {matches.error && <ErrorState message={`${matches.error}. Check the Steam ID and try again.`} />}
+
+      {profile.data && (
+        <>
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            <Stat
+              label="Skill Rating"
+              value={profile.data.skill_rating.toLocaleString("en-US")}
+              hint={`Top ${Math.max(1, Math.ceil((1 - profile.data.skill_percentile) * 100))}% · estimate`}
+            />
+            {profile.data.grades.map((grade) => (
+              <Stat
+                key={grade.category}
+                label={grade.category}
+                value={grade.letter}
+                hint={`${Math.round(grade.score * 100)} / 100`}
+              />
+            ))}
+          </div>
+
+          {profile.data.tendencies.length > 0 && (
+            <Section title="Tendencies" description="Picked from this player's strongest and weakest graded area">
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {profile.data.tendencies.map((tendency) => {
+                  const strength = tendency.tone === "strength";
+                  const Icon = strength ? ArrowUpRight : ArrowDownRight;
+                  return (
+                    <li key={tendency.label} className="flex gap-3 rounded-lg border bg-card px-4 py-3">
+                      <Icon
+                        className={cn("mt-0.5 size-4 shrink-0", strength ? "text-good" : "text-bad")}
+                        aria-hidden="true"
+                      />
+                      <span className="flex flex-col gap-0.5 text-sm">
+                        <span>
+                          <span className={cn("mr-2 text-xs", strength ? "text-good" : "text-bad")}>
+                            {strength ? "Strength" : "Weakness"}
+                          </span>
+                          {tendency.label}
+                        </span>
+                        <span className="text-muted-foreground">{tendency.detail}</span>
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </Section>
+          )}
+        </>
+      )}
 
       {pool.length > 0 && (
         <Section title="Hero Pool" description="Heroes played in the last 10 matches">

@@ -98,3 +98,11 @@ def test_patch_summary_shape():
         assert change["delta"] >= 0
     for change in body["losers"]:
         assert change["delta"] <= 0
+
+
+def test_hero_items_rank_filter():
+    base = client.get("/api/stats/heroes/1/items").json()["items"]
+    ranked = client.get("/api/stats/heroes/1/items?rank=Eternus").json()["items"]
+    assert [i["name"] for i in ranked] == [i["name"] for i in base]
+    assert ranked != base
+    assert client.get("/api/stats/heroes/1/items?rank=Nope").status_code == 422

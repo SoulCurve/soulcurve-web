@@ -5,6 +5,8 @@ import {
   Area,
   AreaChart,
   CartesianGrid,
+  Line,
+  LineChart,
   ReferenceArea,
   ReferenceDot,
   ReferenceLine,
@@ -13,7 +15,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { fetchBoxRoutes, fetchMatchMap, fetchWinProbability } from "@/api";
+import { fetchBoxRoutes, fetchMatchMap, fetchNetWorth, fetchWinProbability } from "@/api";
 import { CHART, axisProps, interpolate, percent } from "@/chartTheme";
 import ChartTooltip from "@/components/ChartTooltip";
 import MatchHeader from "@/components/site/MatchHeader";
@@ -77,6 +79,7 @@ function MatchPage() {
   const { data, error } = useAsync(() => fetchWinProbability(matchId), `wp-${matchId}`);
   const map = useAsync(() => fetchMatchMap(matchId), `map-${matchId}`);
   const boxRoutes = useAsync(fetchBoxRoutes, "box-routes");
+  const netWorth = useAsync(() => fetchNetWorth(matchId), `nw-${matchId}`);
 
   const pWins = data?.points.map((p) => p.p_win) ?? [];
   const last = data?.points[data.points.length - 1];
@@ -205,6 +208,69 @@ function MatchPage() {
               </div>
             </div>
           </Section>
+
+          {netWorth.data && (
+            <Section title="Net Worth" description="Total souls per team · follows the replay above">
+              <div className="h-56">
+                <ResponsiveContainer>
+                  <LineChart data={netWorth.data.points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+                    <CartesianGrid stroke={CHART.grid} vertical={false} />
+                    <XAxis dataKey="t_min" type="number" domain={["dataMin", "dataMax"]} unit="m" {...axisProps} />
+                    <YAxis
+                      tickFormatter={(v: number) => `${Math.round(v / 1000)}k`}
+                      width={40}
+                      {...axisProps}
+                      axisLine={false}
+                    />
+                    {replaying && (
+                      <>
+                        <ReferenceArea x1={replay.t} x2={duration} fill={CHART.surface} fillOpacity={0.7} />
+                        <ReferenceLine x={replay.t} stroke={CHART.mark} />
+                      </>
+                    )}
+                    <Tooltip
+                      cursor={{ stroke: CHART.axis, strokeDasharray: "3 3" }}
+                      content={({ active, payload, label }) =>
+                        active && payload?.length ? (
+                          <ChartTooltip>
+                            <span className="font-mono tabular-nums">{label}m</span>
+                            {payload.map((entry) => (
+                              <span key={String(entry.dataKey)} className="block capitalize">
+                                {String(entry.dataKey)}{" "}
+                                <span className="font-mono text-foreground tabular-nums">
+                                  {Number(entry.value).toLocaleString("en-US")}
+                                </span>
+                              </span>
+                            ))}
+                          </ChartTooltip>
+                        ) : null
+                      }
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="amber"
+                      stroke="var(--amber)"
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={false}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="sapphire"
+                      stroke="var(--sapphire)"
+                      strokeWidth={2}
+                      dot={false}
+                      isAnimationActive={false}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                <TeamLabel team="amber" />
+                <TeamLabel team="sapphire" />
+              </p>
+            </Section>
+          )}
 
           <div className="grid gap-6 lg:grid-cols-[3fr_2fr]">
             <Section

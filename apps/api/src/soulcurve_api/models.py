@@ -281,3 +281,34 @@ class BoxRoute(BaseModel):
 class BoxRouteResponse(BaseModel):
     crates: list[Crate]
     routes: list[BoxRoute]
+
+
+class PlayerGrade(BaseModel):
+    category: str
+    letter: Literal["S", "A", "B", "C", "D", "F"]
+    score: float
+
+
+class PlayerTendency(BaseModel):
+    label: str
+    detail: str
+    tone: Literal["strength", "weakness"]
+
+
+class PlayerProfileResponse(BaseModel):
+    steam_id: str
+    skill_rating: int
+    skill_percentile: float
+    grades: list[PlayerGrade]
+    tendencies: list[PlayerTendency]
+
+
+class NetWorthPoint(BaseModel):
+    t_min: float
+    amber: int
+    sapphire: int
+
+
+class NetWorthResponse(BaseModel):
+    match_id: int
+    points: list[NetWorthPoint]
