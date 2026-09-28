@@ -10,6 +10,7 @@ import TournamentsPage from "@/pages/TournamentsPage";
 import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
+import ChartsLabPage from "@/pages/lab/ChartsLabPage";
 import EffectsLabPage from "@/pages/lab/EffectsLabPage";
 import MatchPage from "@/pages/MatchPage";
 import ModelPage from "@/pages/ModelPage";
@@ -45,6 +46,7 @@ function App() {
           <Route path="/following" element={<FollowingPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/lab/effects" element={<EffectsLabPage />} />
+          <Route path="/lab/charts" element={<ChartsLabPage />} />
         </Routes>
       </div>
       <footer className="border-t">
