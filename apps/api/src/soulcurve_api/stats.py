@@ -99,12 +99,12 @@ _MOCK_ITEMS: list[ItemStat] = [
         [
             ("Extra Health", 0.54, 0.62),
             ("Extra Stamina", 0.50, 0.41),
-            ("Basic Magazine", 0.49, 0.55),
+            ("Extended Magazine", 0.49, 0.55),
             ("Sprint Boots", 0.53, 0.38),
             ("Melee Lifesteal", 0.47, 0.22),
             ("Extra Regen", 0.51, 0.29),
             ("Restorative Shot", 0.56, 0.19),
-            ("Mystic Reach", 0.45, 0.16),
+            ("Mystic Shot", 0.45, 0.16),
             ("Healing Rite", 0.52, 0.33),
             ("Spirit Strike", 0.48, 0.14),
         ]
@@ -118,7 +118,7 @@ _MOCK_ITEMS_BY_HERO: dict[int, list[ItemStat]] = {
             [
                 ("Extra Health", 0.54, 0.62),
                 ("Extra Stamina", 0.50, 0.41),
-                ("Basic Magazine", 0.49, 0.55),
+                ("Extended Magazine", 0.49, 0.55),
                 ("Sprint Boots", 0.53, 0.38),
                 ("Melee Lifesteal", 0.47, 0.22),
             ]

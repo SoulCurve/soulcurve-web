@@ -10,6 +10,7 @@ import hashlib
 from fastapi import APIRouter, HTTPException
 
 from soulcurve_api.models import Build, HeroBuildsResponse
+from soulcurve_api.players import _LEADERBOARD_NAMES
 from soulcurve_api.stats import _MOCK_HEROES, _MOCK_ITEMS, MOCK_PATCH
 
 router = APIRouter()
@@ -30,7 +31,7 @@ def _mock_builds(hero_id: int) -> list[Build]:
         builds.append(
             Build(
                 build_id=hero_id * 10 + i,
-                author=f"Top Player #{i + 1}",
+                author=_LEADERBOARD_NAMES[(hero_id + i * 3) % len(_LEADERBOARD_NAMES)],
                 items=picked,
                 win_rate=round(0.64 - i * 0.035 - (seed % 100) / 5000, 3),
                 games=200 - i * 40 + (seed % 50),
