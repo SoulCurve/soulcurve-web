@@ -5,6 +5,8 @@ import AnalysisPage from "@/pages/AnalysisPage";
 import BlogPage from "@/pages/BlogPage";
 import BlogPostPage from "@/pages/BlogPostPage";
 import FollowingPage from "@/pages/FollowingPage";
+import TournamentPage from "@/pages/TournamentPage";
+import TournamentsPage from "@/pages/TournamentsPage";
 import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
@@ -37,6 +39,8 @@ function App() {
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/news" element={<NewsPage />} />
+          <Route path="/tournaments" element={<TournamentsPage />} />
+          <Route path="/tournaments/:slug" element={<TournamentPage />} />
           <Route path="/following" element={<FollowingPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>

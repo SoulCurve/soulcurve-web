@@ -40,6 +40,8 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/model` | Model transparency: version, algorithm, metrics, input features (mock until M4) |
 | `GET /api/blog` | Blog post list (summaries, no body) |
 | `GET /api/blog/{slug}` | A single blog post, full body |
+| `GET /api/tournaments` | Tournament/league list (mock, fictional teams) |
+| `GET /api/tournaments/{slug}` | One tournament: standings derived from round-robin results, schedule |
 | `GET /api/news` | News / patch-notes feed |
 | `GET /api/me`, `GET /auth/steam/login`, `POST /auth/logout` | Steam OpenID session |
 
@@ -107,12 +109,15 @@ both sides in sync in the same repo.
 8. **Blog (`/blog` list, `/blog/:slug` detail):** long-form posts explaining how SoulCurve
    works (mistake scoring, the tier list, why the site launched on mock data); linked
    from the main nav.
-9. **Following (`/following`):** players you follow (Follow button on the player page),
+9. **Tournaments (`/tournaments` list, `/tournaments/:slug` detail):** live/upcoming/
+   completed events with prize pool, standings and a per-round schedule. Mock events and
+   fictional teams until a pro-match data source is chosen.
+10. **Following (`/following`):** players you follow (Follow button on the player page),
    each with their last 5 results and win rate. Stored in the browser (`localStorage`)
    until accounts get server-side storage in Neon.
-10. **News (`/news`):** patch-notes/news feed, plus a patch winners/losers summary
+11. **News (`/news`):** patch-notes/news feed, plus a patch winners/losers summary
    (biggest hero win-rate swings vs. the previous patch) at the top.
-11. **FAQ (`/faq`).**
+12. **FAQ (`/faq`).**
 
 ## Environment variables
 

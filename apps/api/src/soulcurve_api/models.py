@@ -176,3 +176,40 @@ class RankShare(BaseModel):
 
 class RankDistributionResponse(BaseModel):
     ranks: list[RankShare]
+
+
+class TournamentSummary(BaseModel):
+    slug: str
+    name: str
+    organizer: str
+    start_date: str
+    end_date: str
+    status: Literal["upcoming", "live", "completed"]
+    prize_pool_usd: int
+    team_count: int
+
+
+class TournamentStanding(BaseModel):
+    rank: int
+    team: str
+    wins: int
+    losses: int
+
+
+class TournamentMatch(BaseModel):
+    id: int
+    round: str
+    date: str
+    team_a: str
+    team_b: str
+    score_a: int | None
+    score_b: int | None
+
+
+class Tournament(TournamentSummary):
+    standings: list[TournamentStanding]
+    matches: list[TournamentMatch]
+
+
+class TournamentListResponse(BaseModel):
+    tournaments: list[TournamentSummary]

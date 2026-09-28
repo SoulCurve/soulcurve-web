@@ -301,3 +301,56 @@ export async function fetchBlogPost(slug: string): Promise<BlogPost> {
   }
   return response.json();
 }
+
+export interface TournamentSummary {
+  slug: string;
+  name: string;
+  organizer: string;
+  start_date: string;
+  end_date: string;
+  status: "upcoming" | "live" | "completed";
+  prize_pool_usd: number;
+  team_count: number;
+}
+
+export interface TournamentStanding {
+  rank: number;
+  team: string;
+  wins: number;
+  losses: number;
+}
+
+export interface TournamentMatch {
+  id: number;
+  round: string;
+  date: string;
+  team_a: string;
+  team_b: string;
+  score_a: number | null;
+  score_b: number | null;
+}
+
+export interface Tournament extends TournamentSummary {
+  standings: TournamentStanding[];
+  matches: TournamentMatch[];
+}
+
+export interface TournamentListResponse {
+  tournaments: TournamentSummary[];
+}
+
+export async function fetchTournaments(): Promise<TournamentListResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/tournaments`);
+  if (!response.ok) {
+    throw new Error(`Failed to load tournaments (${response.status})`);
+  }
+  return response.json();
+}
+
+export async function fetchTournament(slug: string): Promise<Tournament> {
+  const response = await fetch(`${API_BASE_URL}/api/tournaments/${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    throw new Error(`Tournament not found (${response.status})`);
+  }
+  return response.json();
+}

@@ -21,6 +21,7 @@ from soulcurve_api.models import MatchEvent, WinProbabilityPoint, WinProbability
 from soulcurve_api.news import router as news_router
 from soulcurve_api.players import router as players_router
 from soulcurve_api.stats import router as stats_router
+from soulcurve_api.tournaments import router as tournaments_router
 
 app = FastAPI(title="SoulCurve API", version=__version__)
 
@@ -40,6 +41,7 @@ app.include_router(players_router)
 app.include_router(builds_router)
 app.include_router(model_info_router)
 app.include_router(blog_router)
+app.include_router(tournaments_router)
 
 
 @app.get("/health")

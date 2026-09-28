@@ -14,6 +14,9 @@ export const axisProps = {
 
 export const percent = (v: number) => `${Math.round(v * 100)}%`;
 
+export const usd = (amount: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
+
 // Win probability at time `t`, linearly interpolated between the model's samples.
 export function interpolate(points: { t_min: number; p_win: number }[], t: number) {
   const after = points.findIndex((p) => p.t_min >= t);
