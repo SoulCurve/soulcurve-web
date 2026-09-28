@@ -1,8 +1,9 @@
-"""Player match history and profile.
+"""Player match history, profile, and leaderboard.
 
-Match history and rank/skill are live from deadlock-api.com, keyed off the
-player's Steam64 id converted to a Deadlock account_id. Leaderboard and
-per-category grades are still mock pending further integration.
+Match history, rank/skill, and the leaderboard are live from deadlock-api.com,
+keyed off the player's Steam64 id converted to a Deadlock account_id.
+Per-category grades are still hybrid (real percentile, synthetic breakdown)
+pending further integration.
 """
 
 import asyncio
@@ -22,7 +23,7 @@ from soulcurve_api.models import (
     PlayerProfileResponse,
     PlayerTendency,
 )
-from soulcurve_api.stats import _MOCK_HEROES
+from soulcurve_api.stats import RANKS
 
 router = APIRouter()
 
@@ -60,45 +61,70 @@ async def player_matches(steam_id: str) -> PlayerMatchesResponse:
         )
         for row in rows[:MATCH_HISTORY_LENGTH]
     ]
-    names = {p.steam_id: p.name for p in leaderboard().players}
+    board = await leaderboard()
+    names = {p.steam_id: p.name for p in board.players}
     return PlayerMatchesResponse(steam_id=steam_id, name=names.get(steam_id), matches=matches)
 
 
 LEADERBOARD_SIZE = 10
+LEADERBOARD_REGION = "NAmerica"
 
-# Fictional handles until deadlock-api's leaderboard lands in M4.
-_LEADERBOARD_NAMES = [
-    "vexlight",
-    "Morrow",
-    "kiln",
-    "saltpeter",
-    "Juno_ttv",
-    "halfcourt",
-    "Ossuary",
-    "reddeer",
-    "tallow",
-    "Pilgrim",
-]
+
+async def _resolve_account_id(name: str, possible_account_ids: list[int]) -> int:
+    """Disambiguate a leaderboard name to one account_id.
+
+    Most names have a single candidate already. When several accounts share
+    the name, steam-search's ranked results (string similarity + recent
+    activity) usually surface the right one; we only trust a hit that's also
+    among deadlock-api's own candidates for that leaderboard spot.
+    """
+    if len(possible_account_ids) == 1:
+        return possible_account_ids[0]
+    candidates = set(possible_account_ids)
+    for profile in await deadlock_client.steam_search(name):
+        if profile["account_id"] in candidates:
+            return profile["account_id"]
+    return possible_account_ids[0]
+
+
+async def _leaderboard_player(
+    position: int, entry: dict, hero_names: dict[int, str]
+) -> LeaderboardPlayer:
+    account_id = await _resolve_account_id(entry["account_name"], entry["possible_account_ids"])
+    rank_data, matches = await asyncio.gather(
+        deadlock_client.fetch_rank(account_id),
+        deadlock_client.fetch_match_history(account_id),
+    )
+    badge = rank_data.get("badge") or 0
+    wins = sum(1 for m in matches if m["player_team"] == m["match_result"])
+    top_hero_ids = entry.get("top_hero_ids") or []
+    return LeaderboardPlayer(
+        position=position,
+        steam_id=str(account_id + STEAM64_ACCOUNT_ID_OFFSET),
+        name=entry["account_name"],
+        rank=RANKS[min(badge // 10, len(RANKS) - 1)],
+        rating=1000 + badge * 30,
+        win_rate=round(wins / len(matches), 3) if matches else 0.0,
+        matches=len(matches),
+        top_hero=hero_names.get(top_hero_ids[0], "Unknown") if top_hero_ids else "Unknown",
+    )
 
 
 @router.get("/api/leaderboard")
-def leaderboard() -> LeaderboardResponse:
-    players = []
-    for i, name in enumerate(_LEADERBOARD_NAMES[:LEADERBOARD_SIZE]):
-        seed = int(hashlib.sha256(f"leaderboard:{name}".encode()).hexdigest(), 16)
-        players.append(
-            LeaderboardPlayer(
-                position=i + 1,
-                steam_id=str(76561198000000000 + seed % 100_000_000),
-                name=name,
-                rank="Eternus" if i < 6 else "Ascendant",
-                rating=4200 - i * 37 - seed % 20,
-                win_rate=round(0.58 + (seed % 90) / 1000 - i * 0.004, 3),
-                matches=180 + seed % 420,
-                top_hero=_MOCK_HEROES[seed % len(_MOCK_HEROES)].name,
-            )
+async def leaderboard() -> LeaderboardResponse:
+    try:
+        entries, hero_names = await asyncio.gather(
+            deadlock_client.fetch_leaderboard(LEADERBOARD_REGION),
+            deadlock_client.fetch_heroes(),
         )
-    return LeaderboardResponse(region="Global", players=players)
+        # Some entries have no resolvable account at all; skip those and keep going.
+        usable = [e for e in entries if e.get("possible_account_ids")][:LEADERBOARD_SIZE]
+        players = await asyncio.gather(
+            *(_leaderboard_player(i + 1, entry, hero_names) for i, entry in enumerate(usable))
+        )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail="deadlock-api unavailable") from exc
+    return LeaderboardResponse(region=LEADERBOARD_REGION, players=list(players))
 
 
 # Categories graded 0-1, in the spirit of Deadlock Labs' role grade and Mobalytics' GPI.

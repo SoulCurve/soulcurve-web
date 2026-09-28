@@ -12,13 +12,26 @@ from fastapi import APIRouter, HTTPException
 
 from soulcurve_api import deadlock_client
 from soulcurve_api.models import Build, HeroBuildsResponse
-from soulcurve_api.players import _LEADERBOARD_NAMES
 from soulcurve_api.stats import _MOCK_ITEMS, MOCK_PATCH, RANKS
 
 router = APIRouter()
 
 BUILD_ITEM_COUNT = 4
 BUILDS_PER_HERO = 3
+
+# Fictional handles for mock build authorship, until deadlock-api exposes a builds endpoint.
+_MOCK_BUILD_AUTHORS = [
+    "vexlight",
+    "Morrow",
+    "kiln",
+    "saltpeter",
+    "Juno_ttv",
+    "halfcourt",
+    "Ossuary",
+    "reddeer",
+    "tallow",
+    "Pilgrim",
+]
 
 
 def _mock_builds(hero_id: int, rank: str | None) -> list[Build]:
@@ -38,7 +51,7 @@ def _mock_builds(hero_id: int, rank: str | None) -> list[Build]:
         builds.append(
             Build(
                 build_id=hero_id * 10 + i,
-                author=_LEADERBOARD_NAMES[(hero_id + i * 3) % len(_LEADERBOARD_NAMES)],
+                author=_MOCK_BUILD_AUTHORS[(hero_id + i * 3) % len(_MOCK_BUILD_AUTHORS)],
                 items=picked,
                 win_rate=round(min(0.85, max(0.3, win_rate)), 3),
                 games=200 - i * 40 + (seed % 50),

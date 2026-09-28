@@ -71,3 +71,19 @@ async def fetch_item_stats(
     if max_badge is not None:
         params["max_average_badge"] = max_badge
     return await _get("/v1/analytics/item-stats", params, _HERO_STATS_TTL_S)
+
+
+async def fetch_leaderboard(region: str) -> list[dict]:
+    return (await _get(f"/v1/leaderboard/{region}", {}, _HERO_STATS_TTL_S))["entries"]
+
+
+async def steam_search(name: str, limit: int = 15) -> list[dict]:
+    """Resolve a persona name to Steam profiles, best match first."""
+    try:
+        return await _get(
+            "/v1/players/steam-search", {"search_query": name, "limit": limit}, _HERO_STATS_TTL_S
+        )
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 404:
+            return []
+        raise

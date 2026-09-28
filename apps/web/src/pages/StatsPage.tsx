@@ -269,12 +269,6 @@ function StatsPage() {
         </Section>
       )}
 
-      {rankDistribution.data && (
-        <Section title="Rank Distribution" description="Share of players at each ranked tier">
-          <RankDistributionChart ranks={rankDistribution.data.ranks} />
-        </Section>
-      )}
-
       {heroes.data && (
         <div className="grid gap-6 xl:grid-cols-2">
           <Section title="Heroes" description="Click a column to sort · bars show distance from 50%">
@@ -333,6 +327,12 @@ function StatsPage() {
             {items.data && <RateTable rows={items.data.items} kind="item" getKey={(it) => it.item_id} />}
           </Section>
         </div>
+      )}
+
+      {rankDistribution.data && (
+        <Section title="Rank Distribution" description="Share of players at each ranked tier">
+          <RankDistributionChart ranks={rankDistribution.data.ranks} />
+        </Section>
       )}
     </PageShell>
   );
