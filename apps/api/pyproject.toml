@@ -3,7 +3,7 @@ name = "soulcurve-api"
 version = "0.1.0"
 description = "SoulCurve backend: serves win-probability predictions"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 dependencies = [
     "fastapi",
     "uvicorn[standard]",
@@ -28,7 +28,7 @@ packages = ["src/soulcurve_api"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
