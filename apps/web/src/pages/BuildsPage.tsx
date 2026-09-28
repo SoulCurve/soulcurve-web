@@ -17,7 +17,7 @@ function HeroSelect({ value, onChange }: { value: number | null; onChange: (hero
         className="h-9 w-full cursor-pointer appearance-none rounded-md border bg-card py-1.5 pr-8 pl-3 text-sm outline-none focus-visible:border-soul/60"
       >
         {heroes.data?.heroes.map((hero) => (
-          <option key={hero.hero_id} value={hero.hero_id}>
+          <option key={hero.hero_id} value={hero.hero_id} className="bg-card text-foreground">
             {hero.name}
           </option>
         ))}

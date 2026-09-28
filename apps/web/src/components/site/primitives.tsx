@@ -16,9 +16,11 @@ export function RankSelect({ value, onChange }: { value: string; onChange: (rank
         onChange={(e) => onChange(e.target.value)}
         className="h-9 w-full cursor-pointer appearance-none rounded-md border bg-card py-1.5 pr-8 pl-3 text-sm outline-none focus-visible:border-soul/60 sm:w-40"
       >
-        <option value="">All Ranks</option>
+        <option value="" className="bg-card text-foreground">
+          All Ranks
+        </option>
         {ranks.data?.map((rank) => (
-          <option key={rank} value={rank}>
+          <option key={rank} value={rank} className="bg-card text-foreground">
             {rank}
           </option>
         ))}
