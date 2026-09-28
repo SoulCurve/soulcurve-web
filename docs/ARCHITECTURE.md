@@ -34,6 +34,7 @@ stable across reloads, per `docs/DECISIONS.md` D2–D4.
 | `GET /api/stats/heroes?rank=` | Hero win/pick rates, optionally filtered by rank |
 | `GET /api/stats/heroes/{hero_id}/items` | Item win/pick rates for a specific hero |
 | `GET /api/stats/items` | Overall item win/pick rates (all heroes) |
+| `GET /api/stats/heroes/{hero_id}/builds` | Top-player item builds for a hero, ranked by win rate |
 | `GET /api/news` | News / patch-notes feed |
 | `GET /api/me`, `GET /auth/steam/login`, `POST /auth/logout` | Steam OpenID session |
 
@@ -88,8 +89,9 @@ both sides in sync in the same repo.
 4. **Player (`/player/:steamId`):** recent match history list, each row linking to
    that match's analysis.
 5. **Stats (`/stats`):** hero win/pick rates (filterable by rank) with the item
-   breakdown for the selected hero.
-6. **News (`/news`) and FAQ (`/faq`).**
+   breakdown for the selected hero, plus a win-rate-derived S/A/B/C/D tier list.
+6. **Builds (`/builds`):** top-player item builds per hero, ranked by win rate.
+7. **News (`/news`) and FAQ (`/faq`).**
 
 ## Environment variables
 

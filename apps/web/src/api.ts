@@ -113,6 +113,29 @@ export async function fetchHeroItemStats(heroId: number): Promise<HeroItemStatsR
   return response.json();
 }
 
+export interface Build {
+  build_id: number;
+  author: string;
+  items: string[];
+  win_rate: number;
+  games: number;
+}
+
+export interface HeroBuildsResponse {
+  patch: string;
+  hero_id: number;
+  hero_name: string;
+  builds: Build[];
+}
+
+export async function fetchHeroBuilds(heroId: number): Promise<HeroBuildsResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/stats/heroes/${heroId}/builds`);
+  if (!response.ok) {
+    throw new Error(`Failed to load builds (${response.status})`);
+  }
+  return response.json();
+}
+
 export interface PlayerMoment {
   t_min: number;
   type: "death" | "objective_loss" | "objective_win" | "good_trade" | "rotation";

@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import Backdrop from "@/components/site/Backdrop";
 import SiteHeader from "@/components/site/SiteHeader";
 import AnalysisPage from "@/pages/AnalysisPage";
+import BuildsPage from "@/pages/BuildsPage";
 import FaqPage from "@/pages/FaqPage";
 import HomePage from "@/pages/HomePage";
 import MatchPage from "@/pages/MatchPage";
@@ -27,6 +28,7 @@ function App() {
           <Route path="/match/:matchId/analysis" element={<AnalysisPage />} />
           <Route path="/player/:steamId" element={<PlayerPage />} />
           <Route path="/stats" element={<StatsPage />} />
+          <Route path="/builds" element={<BuildsPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/faq" element={<FaqPage />} />
         </Routes>

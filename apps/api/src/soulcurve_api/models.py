@@ -61,6 +61,21 @@ class ItemsResponse(BaseModel):
     items: list[ItemStat]
 
 
+class Build(BaseModel):
+    build_id: int
+    author: str
+    items: list[str]
+    win_rate: float
+    games: int
+
+
+class HeroBuildsResponse(BaseModel):
+    patch: str
+    hero_id: int
+    hero_name: str
+    builds: list[Build]
+
+
 class PlayerMoment(BaseModel):
     t_min: float
     type: Literal["death", "objective_loss", "objective_win", "good_trade", "rotation"]
